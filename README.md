@@ -17,14 +17,12 @@ See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
 Installation
 ------------
 - Download Zadig driver https://zadig.akeo.ie/ and follow their guide to install.
-- Download a compiled **RTL FM Player** HERE
+- Download a compiled **RTL FM Player** [Here](https://github.com/rafaelferrari0/rtl_fm_player/blob/master/release/Windows_x86/rtl_fm_player.zip)
 - Or compile it using MinGW
 
 
 Usage
 -----
-
-
 
     Double click rtl_fm_player.exe to open console.
     Use keyboard to control frequency, timeshift, mute and recording.
