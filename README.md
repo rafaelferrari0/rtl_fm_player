@@ -68,7 +68,7 @@ Building
     - `(7zip file)\libzplay-2.02-sdk\libzplay.dll will be requered when runing rtl_fm_streamer.exe`
 
 4. Download this patched libzplay.h and copy to \MinGW\include
-    - `https://github.com/rafaelferrari0/rtl_fm_player/blob/master/patches/libzplay.h`
+    - https://github.com/rafaelferrari0/rtl_fm_player/blob/master/patches/libzplay.h
 
 5. Download https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download 
     - extract (7zip file)\MinGW32\dll\libusb-1.0.dll.a to \MinGW\lib 
