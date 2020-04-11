@@ -17,7 +17,7 @@ See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
 Installation
 ------------
 - Download Zadig driver https://zadig.akeo.ie/ and follow their guide to install.
-- Download a compiled **RTL FM Player** [Here](https://github.com/rafaelferrari0/rtl_fm_player/blob/master/release/Windows_x86/rtl_fm_player.zip)
+- **Download** a compiled **RTL FM Player** [Here](https://github.com/rafaelferrari0/rtl_fm_player/blob/master/release/Windows_x86/rtl_fm_player.zip)
 - Or compile it using MinGW
 
 
@@ -51,7 +51,7 @@ On modern PCs (x86, x64) mono and stereo decoding should be possible easily.
 
 Limitations
 --------------
-Only runs on Windows because it uses "LibZPlay" for sound output.
+Only runs on Windows because it uses **LibZPlay** for sound output.
 
 
 Building
