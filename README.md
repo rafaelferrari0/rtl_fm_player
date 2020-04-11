@@ -17,7 +17,7 @@ See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
 Installation
 ------------
 - Download Zadig driver https://zadig.akeo.ie/ and follow their guide to install.
-- **Download** a compiled **RTL FM Player** [Here](https://github.com/rafaelferrari0/rtl_fm_player/blob/master/release/Windows_x86/rtl_fm_player.zip)
+- Download a compiled RTL FM Player here https://github.com/rafaelferrari0/rtl_fm_player/releases/
 - Or compile it using MinGW
 
 
@@ -75,7 +75,8 @@ Building
     - extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
     - `(7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe`
 
-6. Download the source code, extract to \MinGW\rtl_fm_player
+6. Clone or download the source code and extract to \MinGW\rtl_fm_player
+    - https://github.com/rafaelferrari0/rtl_fm_player/releases/
 
 7. Run rtl_fm_player\build\1st-cmake.bat and 2nd-make.bat
 
