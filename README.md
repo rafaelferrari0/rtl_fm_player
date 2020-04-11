@@ -1,20 +1,30 @@
 RTL SDR FM Player
 ===================
-Turns your Realtek RTL2832 based DVB dongle into a stereo FM radio receiver.
+Turns your Realtek RTL2832 based dongle into a SDR stereo FM radio receiver.
 TimeShift function can go back some minutes in time to listen it again.
-Recording function to write audio file.
+Recording function to write audio files.
 Runs on Windows console only.
 
 Description
 -----------
-RTL SDR FM Player is a small tool to listen FM stereo radio by using a DVB-T dongle.
+**RTL FM Player** is a small tool to listen FM stereo radio by using a DVB-T dongle.
 Outputs stereo audio directly to any Windows sond card.
+Can record audio to .aac .flac .mp3 .ogg .wav file formats.
 
 The DVB-T dongle has to be based on the Realtek RTL2832U.
-See [http://sdr.osmocom.org/trac/wiki/rtl-sdr](http://sdr.osmocom.org/trac/wiki/rtl-sdr) for more RTL SDR details.
+See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
+
+Installation
+------------
+- Download Zadig driver https://zadig.akeo.ie/ and follow their guide to install.
+- Download a compiled **RTL FM Player** HERE
+- Or compile it using MinGW
+
 
 Usage
 -----
+
+
 
     Double click rtl_fm_player.exe to open console.
     Use keyboard to control frequency, timeshift, mute and recording.
@@ -48,17 +58,23 @@ Only runs on Windows because it uses "LibZPlay" for sound output.
 
 Building
 -------
-Install MinGW on default location (\MinGW) with packages "mingw32-base" and "mingw32-pthreads-w32".
 
-Install CMake on \MinGW\CMake
+`Optional guide to compile RTL FM Player sources using MinGW on Windows.`
 
-Download [http://sourceforge.net/projects/libzplay/files/2.02/libzplay-2.02-sdk.7z/download]libZPlay-2.02-SDK and extract (7zip file)\libzplay-2.02-sdk\C++\libzplay.a to \MinGW\lib
-         (7zip file)\libzplay-2.02-sdk\libzplay.dll will be requered when runing rtl_fm_streamer.exe
+1. Install MinGW on default location (\MinGW) with packages "mingw32-base" and "mingw32-pthreads-w32".
 
-Download this tweaked libzplay.h and copy to \MinGW\include
+2. Install CMake on \MinGW\CMake
 
-Download [https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download]libusb-1.0.23.7z, extract (7zip file)\MinGW32\dll\libusb-1.0.dll.a to \MinGW\lib and extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
-         (7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe
+3. Download http://sourceforge.net/projects/libzplay/files/2.02/libzplay-2.02-sdk.7z/download 
+    - extract (7zip file)\libzplay-2.02-sdk\C++\libzplay.a to \MinGW\lib
+    - `(7zip file)\libzplay-2.02-sdk\libzplay.dll will be requered when runing rtl_fm_streamer.exe`
+
+4. Download this tweaked libzplay.h and copy to \MinGW\include
+
+5. Download https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download 
+    - extract (7zip file)\MinGW32\dll\libusb-1.0.dll.a to \MinGW\lib 
+    - extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
+    - `(7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe`
 
 
 Credits
