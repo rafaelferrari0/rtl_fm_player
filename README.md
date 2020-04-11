@@ -77,6 +77,9 @@ Building
     - extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
     - `(7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe`
 
+6. Download the source code, extract to \MinGW\rtl_fm_player
+
+7. Run rtl_fm_player\build\1st-cmake.bat and 2nd-make.bat
 
 Credits
 -------
