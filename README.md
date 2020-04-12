@@ -59,7 +59,9 @@ Building
 
 `Optional guide to compile RTL FM Player sources using MinGW on Windows.`
 
-1. Install MinGW on default location (\MinGW) with packages "mingw32-base" and "mingw32-pthreads-w32".
+`Not tested with MinGW64`
+
+1. Install MinGW32 on default location (\MinGW) with packages "mingw32-base" and "mingw32-pthreads-w32".
 
 2. Install CMake on \MinGW\CMake
 
