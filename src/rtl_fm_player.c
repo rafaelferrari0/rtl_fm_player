@@ -71,10 +71,6 @@ void usage(void)
 	fprintf(
 	stderr, "rtl_fm_player, a simple narrow band FM demodulator for RTL2832 based DVB-T receivers\n\n"
 			"Use:\trtl_fm_player -f freq [-options] [filename]\n"
-			"\t[-M modulation (default: wbfm)]\n"
-			"\t    fm, wbfm, raw, am, usb, lsb\n"
-			"\t    wbfm == -M fm -s 170k -o 4 -A fast -r 32k -l 0 -E deemp\n"
-			"\t    raw mode outputs 2x16 bit IQ pairs\n"
 			"\t[-s sample_rate (default: 24k)]\n"
 			"\t[-d device_index (default: 0)]\n"
 		  "\t[-T enable bias-T on GPIO PIN 0 (works for rtl-sdr.com v3 dongles)]\n"
@@ -793,8 +789,9 @@ static void * dongle_thread_fn(void *arg)
 
 	r= rtlsdr_read_async(s->dev, rtlsdr_callback, s, 0, 0);
   if (r < 0) {
-    if (beverbose)
-      fprintf(stderr, "WARNING: async read failed.\n");
+//    if (beverbose)
+      fprintf(stderr, "\nError reading from device.\nPress any key to exit.\n");
+      do_exit=1;
   }
   
 	return 0;
@@ -883,23 +880,23 @@ static void * demod_thread_fn(void *arg)
 
 static void * output_thread_fn(void *arg)
 {
-
   int circbufferbotton;
   int circbufferout;
   int shiftmin;
   int shiftmax;
-  char circbufferfull;
-  
-	int SentNum = 0;
+  int bufstreaming;
+	int SentNum;
+	int circbufferfull;
 	struct output_state *s = arg;
-//	char buf[16384];
-//	uint32_t len = 16384;
+	void * lastPushData;
 
   circbufferbotton=0;
   circbufferout=0;
   circbufferfull=0;
   shiftmin=0;
   shiftmax=0;
+  bufstreaming=0;
+  SentNum=0;
 
 	while (!do_exit)
 	{
@@ -909,23 +906,24 @@ static void * output_thread_fn(void *arg)
 			usleep(5000);
 		}
 
-    // copy output_buffer to local buffer, this must be fast because of thread locks
+    // if already streaming, check if libzplay is busy
+    if (bufstreaming!=0) {
+      if (zplay_IsStreamDataFree(libzplay,lastPushData)==0)
+        bufstreaming=2; // busy
+      else
+        bufstreaming=1; // streaming
+    }
+
+    // copy block to circular buffer
 		pthread_rwlock_rdlock(&s->rw);
-//		memcpy(buf, output_buffer + output_buffer_rpos, len);
-
 		memcpy(circbuffer+(circbufferbotton*CIRCBUFFCLUSTER), output_buffer + output_buffer_rpos, CIRCBUFFCLUSTER);
-
 		output_buffer_rpos += CIRCBUFFCLUSTER;
 		output_buffer_size -= CIRCBUFFCLUSTER;
 		if (output_buffer_rpos >= output_buffer_size_max) output_buffer_rpos = 0;
 		pthread_rwlock_unlock(&s->rw);
 
-    // copy local buffer to circular timeshift buffer
-//    memcpy(circbuffer+(circbufferbotton*CIRCBUFFCLUSTER), buf, 16384);
-
 		if (isStartStream)
 		{
-
       if (circbufferfull==0)
         shiftmin=0;
       else {
@@ -943,22 +941,21 @@ static void * output_thread_fn(void *arg)
         if (circbuffeshift > circbufferbotton)
           circbuffeshift=circbufferbotton;
       } else {
-        if (circbuffeshift > (circbufferslots-1))
-          circbuffeshift = (circbufferslots-1);
+        if (circbuffeshift > (circbufferslots-2))
+          circbuffeshift = (circbufferslots-2);
       }
 
+      // calculate circular buffer playback position
       circbufferout = (circbufferbotton-circbuffeshift);
-
       if (circbufferout < 0) {
         circbufferout  = circbufferslots - (circbuffeshift-circbufferbotton);
       }
 
-
-//      if (output.filename!=0) {
-//        SentNum = fwrite (buf , sizeof(char), len, output.file);
-//      } else {
+      if (bufstreaming!=2) { // if not busy
         SentNum = zplay_PushDataToStream(libzplay, circbuffer+(circbufferout*CIRCBUFFCLUSTER), CIRCBUFFCLUSTER);
-//      }
+      }
+      lastPushData=circbuffer+(circbufferout*CIRCBUFFCLUSTER);
+      bufstreaming=1;
 
       if (++circbufferbotton >= circbufferslots) {
         circbufferfull=1;
@@ -1290,10 +1287,11 @@ int main(int argc, char **argv)
   char infostr[16];
   char fileUniqueStr[35];
   char *filenameExt;
-
+  
 
   // timeshift buffer size in kbytes
-  circbuffersize = 10240;
+//  circbuffersize = 20480;
+  circbuffersize = 81920;
   circbufferslots = (circbuffersize * 1024) / CIRCBUFFCLUSTER;
   circbuffeshift=0;
 
@@ -1477,7 +1475,7 @@ int main(int argc, char **argv)
 
   // allocate timeshift buffer
   if (beverbose)
-    fprintf(stderr, "allocating %u bytes\n", circbufferslots * CIRCBUFFCLUSTER);
+    fprintf(stderr, "Allocating %u bytes\n", circbufferslots * CIRCBUFFCLUSTER);
   circbuffer = (char *)malloc(circbufferslots * CIRCBUFFCLUSTER);
   if (circbuffer==0) {
 		fprintf(stderr,"Can't allocate memmory for timeshift function\n");
@@ -1542,14 +1540,17 @@ int main(int argc, char **argv)
 	/* Reset endpoint before we start reading from it (mandatory) */
 	verbose_reset_buffer(dongle.dev);
 
+  // start threads
 	pthread_create(&controller.thread, NULL, controller_thread_fn, (void *) (&controller));
 	usleep(100000);
+
 	pthread_create(&output.thread, NULL, output_thread_fn, (void *) (&output));
+
 	pthread_create(&demod.thread, NULL, demod_thread_fn, (void *) (&demod));
-
-
-  // Start reading samples from dongle
+	
+  // Start reading samples from dongle 
 	pthread_create(&dongle.thread, NULL, dongle_thread_fn, (void *) (&dongle));
+
 
 	optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
 	if (beverbose) {
@@ -1562,16 +1563,16 @@ int main(int argc, char **argv)
 
 
   zplay_SetSettings(libzplay, sidAccurateLength, 0);
-  zplay_SetSettings(libzplay, sidWaveBufferSize , 1500);
+//  zplay_SetSettings(libzplay, sidWaveBufferSize , 1500);
 
   if (demod.lpr.mode==2) {
     if (beverbose)
       fprintf(stderr, "Starting Stereo output\n");
-    libzplayerr = zplay_OpenStream(libzplay, 1, 1, WAVHeaderStereo, sizeof(WAVHeaderStereo), sfWav);
+    libzplayerr = zplay_OpenStream(libzplay, 0, 1, WAVHeaderStereo, sizeof(WAVHeaderStereo), sfWav);
   }  else {
     if (beverbose)
       fprintf(stderr, "Starting Mono output\n");
-    libzplayerr = zplay_OpenStream(libzplay, 1, 1, WAVHeaderMono, sizeof(WAVHeaderMono), sfWav);
+    libzplayerr = zplay_OpenStream(libzplay, 0, 1, WAVHeaderMono, sizeof(WAVHeaderMono), sfWav);
   }
 
   if (libzplayerr==0) {
@@ -1618,13 +1619,26 @@ int main(int argc, char **argv)
   muted=0;
   recording=0;
 
-  usleep(500000);
+      printf("\n+---------------------------------  k e y s ---------------------------------+\n");
 
   if (output.filename==0) {
-    printf("\n[KEYS] \nW: +100KHz S: -100KHz \nA: TimeShift [Past]  D: TimeShift [Present]  P: TimeShift [Live] \nM: Mute/Unmute \nR: Record/Stop \nX: Exit\n\n");
+//    printf("| [KEYS] \nW: +100KHz S: -100KHz \nA: TimeShift [Past]  D: TimeShift [Present]  L: TimeShift [Live] \nM: Mute/Unmute \nR: Record/Stop \nX: Exit\n\n");
+
+
+    printf("| W: +100KHz S: -100KHz                                                      |\n");
+    printf("| A: TimeShift [Past]  D: TimeShift [Present]  L: TimeShift [Live]           |\n");
+    printf("| M: Mute/Unmute                                                             |\n");
+    printf("| R: Record/Stop                                                             |\n");
+    printf("| X: Exit                                                                    |\n");
+    printf("+----------------------------------------------------------------------------+\n\n");
+
   } else {
-    printf("\n[KEYS] \nX: Exit\n\n");
-    printf("Set frequency to %.2f MHz\n", ((float)((int)(controller.freqs[controller.freq_len-1] / 10000)) / 100.0));
+//    printf("| [KEYS] \nX: Exit\n\n");
+    printf("| X: Exit                                                                    |\n");
+    printf("+----------------------------------------------------------------------------+\n\n");
+    
+    
+    printf("  >>> %.2f MHz <<<\n", ((float)((int)(controller.freqs[controller.freq_len-1] / 10000)) / 100.0));
     printf("Controls disabled. Saving audio to %s\n\n",output.filename);
     reprintline=0;
   }
@@ -1634,27 +1648,31 @@ int main(int argc, char **argv)
 	{
    	usleep(100000);
 
+    // [TimeShift100%] [Mute] [Rec]
     if (circbuffeshift <= 0) {
       strcpy(infostr,"[Live] ");
     } else {
-      strcpy(infostr,"[TimeShift] ");
+      sprintf(infostr,"[TimeShift%u%%] ",((circbuffeshift *100) / circbufferslots));
     }
     if (muted) {
-      strcat(infostr, "[muted] ");
+      strcat(infostr, "[Mute]  ");
       if (recording)
-        strcat(infostr, "[rec] ");
+        strcat(infostr, "[Rec] ");
       else
         strcat(infostr, "      ");
     } else {
       if (recording)
-        strcat(infostr, "[rec]       ");
+        strcat(infostr, "[Rec]                ");
       else
-        strcat(infostr, "            ");    
-    }
+        strcat(infostr, "                     ");    
+    }          // [Live]
+               // [TimeShift100%] [Mute] [Rec]
 
 
     if (reprintline) {
-      printf("Set frequency to %.2f MHz %s\r", ((float)((int)(controller.freqs[controller.freq_len-1] / 10000)) / 100.0) , infostr );
+      printf("  >>> %.2f MHz <<<  %s\r", ((float)((int)(controller.freqs[controller.freq_len-1] / 10000)) / 100.0) , infostr );
+      fflush(stdout);
+      fflush(stdin);
       reprintline=0;
     }
 
@@ -1681,14 +1699,14 @@ int main(int argc, char **argv)
       reprintline=1;
     }
     if ((keybrd==97) || (keybrd==65)) { // A
-      circbuffeshift+=10;
+      circbuffeshift+=20;
       reprintline=1;
     }
     if ((keybrd==100) || (keybrd==68)) { // D
-      circbuffeshift-=10;
+      circbuffeshift-=20;
       reprintline=1;
     }
-    if ((keybrd==112) || (keybrd==80)) { // P
+    if ((keybrd==108) || (keybrd==76)) { // P
       circbuffeshift=0;
       reprintline=1;
     }
@@ -1725,7 +1743,6 @@ int main(int argc, char **argv)
         recording=0;
       }
      reprintline=1;
-     fflush(stdin);
     }
 
     } // output.filename
@@ -1751,7 +1768,7 @@ int main(int argc, char **argv)
     fprintf(stderr, "Closing threads\n");
 
   // wait for dongle thread
-  // rtlsdr_cancel_async is called inside rtlsdr_callback thread
+  // rtlsdr_cancel_async must be called inside rtlsdr_callback thread
 	pthread_join(dongle.thread, NULL); 
 	safe_cond_signal(&demod.ready, &demod.ready_m);
 	pthread_join(demod.thread, NULL);
@@ -1771,7 +1788,6 @@ int main(int argc, char **argv)
 	if (beverbose)
     fprintf(stderr, "Closing controller\n");		
 	controller_cleanup(&controller);
-
 
   free(circbuffer);
 
