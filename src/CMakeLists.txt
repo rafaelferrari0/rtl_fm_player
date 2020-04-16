@@ -78,6 +78,12 @@ add_library(convenience_static STATIC
     convenience/convenience.c
 )
 
+# lame lib
+#add_library(libmp3lame_static STATIC
+#    libmp3lame/lame.c
+#)
+
+
 # libgetopt lib
 if(WIN32)
 add_library(libgetopt_static STATIC
@@ -88,7 +94,7 @@ add_library(libgetopt_static STATIC
 #    rtlsdr_shared
 #)
 
-target_link_libraries(convenience_static
+target_link_libraries(convenience_static 
     rtlsdr_static
 )
 
@@ -104,9 +110,9 @@ add_executable(rtl_fm_player rtl_fm_player.c)
 set(INSTALL_TARGETS rtlsdr_shared rtlsdr_static rtl_fm_player)
 
 #target_link_libraries(rtl_fm_player rtlsdr_shared convenience_static
-target_link_libraries(rtl_fm_player rtlsdr_static convenience_static
+target_link_libraries(rtl_fm_player rtlsdr_static convenience_static 
     ${LIBUSB_LIBRARIES}
-    ${LIBZPLAY_LIBRARIES}
+    ${SDL2_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
 )
 

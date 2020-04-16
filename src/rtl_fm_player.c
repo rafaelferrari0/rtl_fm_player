@@ -36,9 +36,7 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <termios.h>
-#include <sys/socket.h>
 #include <sys/types.h>
-#include <netinet/in.h>
 #else
 #include <windows.h>
 #include <fcntl.h>
@@ -52,10 +50,13 @@
 #define _USE_MATH_DEFINES
 #endif
 
+
 #include <math.h>
 #include <pthread.h>
 #include <libusb.h>
-#include <libzplay.h>
+
+#define SDL_MAIN_HANDLED
+#include <SDL2/SDL.h>
 
 #include "rtl_fm_player.h"
 
@@ -84,7 +85,7 @@ void usage(void)
       "\t    deemp:  enable de-emphasis filter\n"
       "\t    direct: enable direct sampling\n"
       "\t    offset: enable offset tuning\n"
-      "\tfilename (supported file extensions .aac .flac .mp3 .ogg .wav)\n"
+      "\tfilename (.wav file format)\n"
       "\t[-X Start with FM Stereo support]\n"
       "\t[-Y Start with FM Mono support]\n"
       "\t[-V verbose]\n"
@@ -106,9 +107,9 @@ BOOL WINAPI sighandler(int signum)
 {
   if (CTRL_C_EVENT == signum)
   {
-    if (beverbose)
+    if (_beverbose)
       fprintf(stderr, "\nSignal caught, exiting!\n");
-    do_exit = 1;
+    _do_exit = 1;
     fflush(stdin);
     return TRUE;
   }
@@ -117,9 +118,9 @@ BOOL WINAPI sighandler(int signum)
 #else
 static void sighandler(int signum)
 {
-  if (beverbose)
+  if (_beverbose)
     fprintf(stderr, "\nSignal caught, exiting!\n");
-  do_exit = 1;
+  _do_exit = 1;
   fflush(stdin); 
 }
 #endif
@@ -135,6 +136,61 @@ double log2(double n)
   return log(n) / log(2.0);
 }
 #endif
+
+
+int _getch(void)
+{
+// https://bitismyth.wordpress.com/2015/06/10/um-getch-multiplataforma/
+#ifdef __linux
+  struct termios newtios, oldtios;
+  int ch;
+ 
+  tcgetattr(STDIN_FILENO, &oldtios);
+ 
+  /* Reusa o modo atual. */
+  newtios = oldtios;
+ 
+  /* Desabilita o modo canonico e o echo */
+  newtios.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newtios);
+ 
+  ch = getchar();
+ 
+  /* Retorna o terminal ao normal. */
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldtios);
+ 
+  return ch;
+#else
+  // Usa as funções do console do Windows para ler uma tecla.
+  //
+  HANDLE hStdin = GetStdHandle (STD_INPUT_HANDLE);
+  INPUT_RECORD irInputRecord;
+  DWORD dwEventsRead;
+  int ch;
+ 
+  /* Le keypress... */
+   while(PeekConsoleInputA(hStdin,&irInputRecord,1,&dwEventsRead)){
+        if(dwEventsRead!=0){
+            //check if it was Key Event
+            if(irInputRecord.EventType==KEY_EVENT){
+                ch=irInputRecord.Event.KeyEvent.uChar.AsciiChar; 
+                ReadConsoleInputA(hStdin,&irInputRecord,1,&dwEventsRead);
+                FlushConsoleInputBuffer(hStdin);
+              if (irInputRecord.Event.KeyEvent.bKeyDown!=0)   // not key release
+                return ch;
+              else
+                continue;
+            }
+            if(ReadConsoleInputA(hStdin,&irInputRecord,1,&dwEventsRead)){
+                continue; 
+            }
+        } else
+        WaitForSingleObject(hStdin,1000);
+    }
+  return EOF;
+#endif
+}
+
 
 void init_u8_f32_table()
 {
@@ -359,7 +415,7 @@ void init_lp_real_f32(struct demod_state *fm)
   int i;
   float fmh, fpl, fph, fsl, fsh, fv, fi, fh, wf;
 
-  if (beverbose)
+  if (_beverbose)
     fprintf(stderr, "Init FIR hamming, size: %d sample_rate: %d\n", fm->lpr.size, fm->rate_in);
   fm->lpr.rsize = (fm->lpr.size >> 1);
   wf = PI2_F * 19000.0f / (float) fm->rate_in;
@@ -737,7 +793,7 @@ static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
   struct dongle_state *s = ctx;
   struct demod_state *d = s->demod_target;
 
-  if (do_exit) { 
+  if (_do_exit) { 
     rtlsdr_cancel_async(dongle.dev);
     return;
   }
@@ -754,27 +810,27 @@ static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
   }
 
   pthread_rwlock_wrlock(&d->rw);
-  if (input_buffer_wpos + len <= input_buffer_size_max)
+  if (_input_buffer_wpos + len <= _input_buffer_size_max)
   {
-    memcpy(input_buffer + input_buffer_wpos, buf, len);
-    input_buffer_wpos += len;
-    input_buffer_size += len;
+    memcpy(_input_buffer + _input_buffer_wpos, buf, len);
+    _input_buffer_wpos += len;
+    _input_buffer_size += len;
     /* begin new read with zero */
-    if (input_buffer_wpos == input_buffer_size_max) input_buffer_wpos = 0;
+    if (_input_buffer_wpos == _input_buffer_size_max) _input_buffer_wpos = 0;
   }
   else
   {
     /* buffer_size_max must be multiple of len */
-    memcpy(input_buffer, buf, len);
-    input_buffer_wpos = len;
-    input_buffer_size += len;
+    memcpy(_input_buffer, buf, len);
+    _input_buffer_wpos = len;
+    _input_buffer_size += len;
   }
   /* already droped some data, so print info */
-  if (input_buffer_size > input_buffer_size_max)
+  if (_input_buffer_size > _input_buffer_size_max)
   {
-    if (beverbose)
-      fprintf(stderr, "dropping input buffer: %u B\n", input_buffer_size - input_buffer_size_max);
-    input_buffer_size = input_buffer_size_max;
+    if (_beverbose)
+      fprintf(stderr, "dropping input buffer: %u B\n", _input_buffer_size - _input_buffer_size_max);
+    _input_buffer_size = _input_buffer_size_max;
   }
   pthread_rwlock_unlock(&d->rw);
   //safe_cond_signal(&d->ready, &d->ready_m);
@@ -785,13 +841,12 @@ static void * dongle_thread_fn(void *arg)
   int r = 0;
   struct dongle_state *s = arg;
 
-  if (do_exit) return 0;
+  if (_do_exit) return 0;
 
   r= rtlsdr_read_async(s->dev, rtlsdr_callback, s, 0, 0);
   if (r < 0) {
-//    if (beverbose)
       fprintf(stderr, "\nError reading from device.\nPress any key to exit.\n");
-      do_exit=1;
+      _do_exit=1;
   }
   
   return 0;
@@ -803,20 +858,20 @@ static void * demod_thread_fn(void *arg)
   struct output_state *o = d->output_target;
   uint32_t len;
 
-  while (!do_exit)
+  while (!_do_exit)
   {
     len = MAXIMUM_BUF_LENGTH;
-    while (input_buffer_size < len)
+    while (_input_buffer_size < len)
     {
-      if ((d->exit_flag) || (do_exit)) return 0;
+      if ((d->exit_flag) || (_do_exit)) return 0;
       usleep(5000);
     }
 
     pthread_rwlock_wrlock(&d->rw);
-    memcpy(d->buf, input_buffer + input_buffer_rpos, len);
-    input_buffer_rpos += len;
-    input_buffer_size -= len;
-    if (input_buffer_rpos == input_buffer_size_max) input_buffer_rpos = 0;
+    memcpy(d->buf, _input_buffer + _input_buffer_rpos, len);
+    _input_buffer_rpos += len;
+    _input_buffer_size -= len;
+    if (_input_buffer_rpos == _input_buffer_size_max) _input_buffer_rpos = 0;
     d->buf_len = len;
     pthread_rwlock_unlock(&d->rw);
 
@@ -834,7 +889,7 @@ static void * demod_thread_fn(void *arg)
     full_demod(d);
 
     if (d->exit_flag) {
-      do_exit = 1;
+      _do_exit = 1;
     }
 
     /* squelch */
@@ -848,32 +903,31 @@ static void * demod_thread_fn(void *arg)
     /* output */
     pthread_rwlock_wrlock(&o->rw);
     len = d->result_len << 1;
-    if (output_buffer_wpos + len <= output_buffer_size_max)
+    if (_output_buffer_wpos + len <= _output_buffer_size_max)
     {
-      memcpy(output_buffer + output_buffer_wpos, d->result, len);
-      output_buffer_wpos += len;
-      output_buffer_size += len;
+      memcpy(_output_buffer + _output_buffer_wpos, d->result, len);
+      _output_buffer_wpos += len;
+      _output_buffer_size += len;
       /* begin new read with zero */
-      if (output_buffer_wpos >= output_buffer_size_max) output_buffer_wpos = 0;
+      if (_output_buffer_wpos >= _output_buffer_size_max) _output_buffer_wpos = 0;
     }
     else
     {
       /* buffer_size_max must be multiple of len */
-      memcpy(output_buffer, d->result, len);
-      output_buffer_wpos = len;
-      output_buffer_size += len;
+      memcpy(_output_buffer, d->result, len);
+      _output_buffer_wpos = len;
+      _output_buffer_size += len;
     }
     /* already dropped some data, so print info */
-    if (output_buffer_size > output_buffer_size_max)
+    if (_output_buffer_size > _output_buffer_size_max)
     {
-      if (beverbose)
-        fprintf(stderr, "dropping output buffer: %u B\n", output_buffer_size - output_buffer_size_max);
-      output_buffer_size = output_buffer_size_max;
+      if (_beverbose)
+        fprintf(stderr, "dropping output buffer: %u B\n", _output_buffer_size - _output_buffer_size_max);
+      _output_buffer_size = _output_buffer_size_max;
     }
     pthread_rwlock_unlock(&o->rw);
     
   }
-
 
   return 0;
 }
@@ -884,100 +938,93 @@ static void * output_thread_fn(void *arg)
   int circbufferout;
   int shiftmin;
   int shiftmax;
-  int bufstreaming;
+//  int bufstreaming;
   int SentNum;
   int circbufferfull;
   struct output_state *s = arg;
-  void * lastPushData;
+
 
   circbufferbotton=0;
   circbufferout=0;
   circbufferfull=0;
   shiftmin=0;
   shiftmax=0;
-  bufstreaming=0;
   SentNum=0;
 
-  while (!do_exit)
+  while (!_do_exit)
   {
-    while (output_buffer_size < CIRCBUFFCLUSTER)
+    while (_output_buffer_size < CIRCBUFFCLUSTER)
     {
-      if (do_exit) return 0;
+      if (_do_exit) return 0;
       usleep(5000);
     }
 
-    // if already streaming, check if libzplay is busy
-    if (bufstreaming!=0) {
-      if (zplay_IsStreamDataFree(libzplay,lastPushData)==0)
-        bufstreaming=2; // busy
-      else
-        bufstreaming=1; // streaming
-    }
 
     // copy block to circular buffer
     pthread_rwlock_rdlock(&s->rw);
-    memcpy(circbuffer+(circbufferbotton*CIRCBUFFCLUSTER), output_buffer + output_buffer_rpos, CIRCBUFFCLUSTER);
-    output_buffer_rpos += CIRCBUFFCLUSTER;
-    output_buffer_size -= CIRCBUFFCLUSTER;
-    if (output_buffer_rpos >= output_buffer_size_max) output_buffer_rpos = 0;
+    memcpy(_circbuffer+(circbufferbotton*CIRCBUFFCLUSTER), _output_buffer + _output_buffer_rpos, CIRCBUFFCLUSTER);
+    _output_buffer_rpos += CIRCBUFFCLUSTER;
+    _output_buffer_size -= CIRCBUFFCLUSTER;
+    if (_output_buffer_rpos >= _output_buffer_size_max) _output_buffer_rpos = 0;
     pthread_rwlock_unlock(&s->rw);
 
-    if (isStartStream)
+    if (_isStartStream)
     {
       if (circbufferfull==0)
         shiftmin=0;
       else {
         shiftmin = circbufferbotton+1;
-        if (shiftmin >= circbufferslots) {
+        if (shiftmin >= _circbufferslots) {
           shiftmin=0;
         }
       }
       shiftmax=circbufferbotton;
 
-      if (circbuffeshift < 0) circbuffeshift=0;
+      if (_circbuffeshift < 0) _circbuffeshift=0;
 
       // max shift time available
       if (circbufferfull==0) {
-        if (circbuffeshift > circbufferbotton)
-          circbuffeshift=circbufferbotton;
+        if (_circbuffeshift > circbufferbotton)
+          _circbuffeshift=circbufferbotton;
       } else {
-        if (circbuffeshift > (circbufferslots-2))
-          circbuffeshift = (circbufferslots-2);
+        if (_circbuffeshift > (_circbufferslots-2))
+          _circbuffeshift = (_circbufferslots-2);
       }
 
       // calculate circular buffer playback position
-      circbufferout = (circbufferbotton-circbuffeshift);
+      circbufferout = (circbufferbotton-_circbuffeshift);
       if (circbufferout < 0) {
-        circbufferout  = circbufferslots - (circbuffeshift-circbufferbotton);
+        circbufferout  = _circbufferslots - (_circbuffeshift-circbufferbotton);
       }
 
-      if (bufstreaming!=2) { // if not busy
-        SentNum = zplay_PushDataToStream(libzplay, circbuffer+(circbufferout*CIRCBUFFCLUSTER), CIRCBUFFCLUSTER);
+      if (!_audio_muted) {
+        SentNum = SDL_QueueAudio(_audio_device, _circbuffer+(circbufferout*CIRCBUFFCLUSTER), CIRCBUFFCLUSTER);
       }
-      lastPushData=circbuffer+(circbufferout*CIRCBUFFCLUSTER);
-      bufstreaming=1;
 
-      if (++circbufferbotton >= circbufferslots) {
+      if (output.filename!=0) {
+        fwrite (_circbuffer+(circbufferout*CIRCBUFFCLUSTER) , sizeof(char), CIRCBUFFCLUSTER, output.file);
+      }
+
+      if (++circbufferbotton >= _circbufferslots) {
         circbufferfull=1;
         circbufferbotton=0;
       }
 
       
-      if (SentNum == 0)
-      {
-        fprintf(stderr, "Error sending stream: \"%s\". Close the connection!\n", zplay_GetError(libzplay) );
-        isStartStream = false;
+      if (SentNum != 0) {
+        fprintf(stderr, "Error sending stream: \"%s\". Close the connection!\n", SDL_GetError() );
+        _isStartStream = false;
         // Stop reading samples from dongle
         rtlsdr_cancel_async(dongle.dev);
         pthread_join(dongle.thread, NULL);
+        fprintf(stderr,"Press [X] to exit");
       }
-    } // isStartStream
+    } // _isStartStream
 
-  } // do_exit
+  } // _do_exit
 
-  if (isStartStream) {
-    zplay_Stop(libzplay);
-    isStartStream=false;
+  if (_isStartStream) {
+    _isStartStream=false;
   }
 
   return 0;
@@ -1038,7 +1085,7 @@ static void * controller_thread_fn(void *arg)
   }
 
   /* Set the frequency */
-  if (beverbose) {
+  if (_beverbose) {
     verbose_set_frequency(dongle.dev, dongle.freq);
     fprintf(stderr, "Oversampling input by: %ix.\n", demod.downsample);
     fprintf(stderr, "Oversampling output by: %ix.\n", demod.post_downsample);
@@ -1049,7 +1096,7 @@ static void * controller_thread_fn(void *arg)
   }
    
   /* Set the sample rate */
-  if (beverbose) {
+  if (_beverbose) {
     verbose_set_sample_rate(dongle.dev, dongle.rate);
     fprintf(stderr, "Output at %u Hz.\n", demod.rate_in/demod.post_downsample);
   } else {
@@ -1057,7 +1104,7 @@ static void * controller_thread_fn(void *arg)
       fprintf(stderr, "WARNING: Failed to set sample rate.\n");
   }
 
-  while (!do_exit) {
+  while (!_do_exit) {
     safe_cond_wait(&s->hop, &s->hop_m);
     if (s->freq_len <= 1) {
       continue;}
@@ -1200,68 +1247,91 @@ void sanity_checks(void)
 
   if (controller.freq_len >= FREQUENCIES_LIMIT) {
     fprintf(stderr, "Too many channels, maximum %i.\n", FREQUENCIES_LIMIT);
-    printf("\nPress [ENTER] to exit...");
-    fgetc(stdin);
+    fprintf(stderr,"Press any key to exit\n");
+    _getch();
     exit(1);
   }
 
   if (controller.freq_len > 1 && demod.squelch_level == 0) {
     fprintf(stderr, "Please specify a squelch level.  Required for scanning multiple frequencies.\n");
-    printf("\nPress [ENTER] to exit...");
-    fgetc(stdin);
+    fprintf(stderr,"Press any key to exit\n");
+    _getch();
     exit(1);
   }
 
 }
 
-
-int _getch(void)
+void CloseWaveOut(FILE * file)
 {
-// https://bitismyth.wordpress.com/2015/06/10/um-getch-multiplataforma/
-#ifdef __linux
-  struct termios newtios, oldtios;
-  int ch;
- 
-  tcgetattr(STDIN_FILENO, &oldtios);
- 
-  /* Reusa o modo atual. */
-  newtios = oldtios;
- 
-  /* Desabilita o modo canonico e o echo */
-  newtios.c_lflag &= ~(ICANON | ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &newtios);
- 
-  ch = getchar();
- 
-  /* Retorna o terminal ao normal. */
-  tcsetattr(STDIN_FILENO, TCSANOW, &oldtios);
- 
-  return ch;
-#else
-  // Usa as funções do console do Windows para ler uma tecla.
-  //
-  HANDLE hStdin = GetStdHandle (STD_INPUT_HANDLE);
-  INPUT_RECORD irInputRecord;
-  DWORD dwEventsRead;
-  int ch;
- 
-  /* Le keypress... */
-  while (ReadConsoleInputA(hStdin, &irInputRecord, 1, &dwEventsRead))
-    if (irInputRecord.EventType == KEY_EVENT &&
-    irInputRecord.Event.KeyEvent.wVirtualKeyCode != VK_SHIFT &&
-    irInputRecord.Event.KeyEvent.wVirtualKeyCode != VK_MENU &&
-    irInputRecord.Event.KeyEvent.wVirtualKeyCode != VK_CONTROL)
-    {
-      ch = irInputRecord.Event.KeyEvent.uChar.AsciiChar;
- 
-      /* ... e, finalmente, le o key release! */
-      ReadConsoleInputA (hStdin, &irInputRecord , 1, &dwEventsRead);
-      return ch;
-    }
 
-  return EOF;
-#endif
+  if (file!=NULL) {
+    // Fixing WAV file header
+    // http://www.topherlee.com/software/pcm-tut-wavformat.html
+    if (file != stdout) {
+      long int outfilesize = ftell(file);
+      fseek ( file, 4, SEEK_SET );
+      outfilesize-=8;
+      fputc(outfilesize & 0xff,file);
+      fputc((outfilesize >> 8) & 0xff,file);
+      fputc((outfilesize >> 16) & 0xff,file);
+      fputc((outfilesize >> 24) & 0xff,file);
+      fseek ( file, 40, SEEK_SET );
+      outfilesize-=36;
+      fputc(outfilesize & 0xff,file);
+      fputc((outfilesize >> 8) & 0xff,file);
+      fputc((outfilesize >> 16) & 0xff,file);
+      fputc((outfilesize >> 24) & 0xff,file);
+    } // if
+		fclose(file);
+		file=NULL;
+	} // if
+
 }
+
+FILE * InitWaveOut(char * newfile, int mode)
+{
+  FILE *file;
+  size_t written;
+
+  // write WAV output to file
+  if (newfile ==0) {
+    return NULL;
+  } else {
+
+    if (strcmp(newfile, "-") == 0)
+    { 
+      fprintf(stderr, "Opening STDOUT\n");
+      file = stdout;
+#ifdef _WIN32
+      _setmode(_fileno(file), _O_BINARY);
+#endif
+    }
+    else if (newfile!=0)
+    {
+      file = fopen(newfile, "wb");
+      if (!file) {
+        return NULL;
+      }
+    }
+    if (mode==2) {  
+      written = fwrite(_WAVHeaderStereo , sizeof(char), sizeof(_WAVHeaderStereo), file); // write STEREO WAV header
+      if (written != sizeof(_WAVHeaderStereo)) {
+        fclose(file);
+        return NULL;
+      }
+    } else {
+      written = fwrite(_WAVHeaderMono , sizeof(char), sizeof(_WAVHeaderMono), file); // write MONO WAV header
+      if (written != sizeof(_WAVHeaderMono)) {
+        fclose(file);
+        return NULL;
+      }
+    }
+    
+    return file;
+  } // newfile
+
+}
+
 
 int main(int argc, char **argv)
 {
@@ -1273,47 +1343,54 @@ int main(int argc, char **argv)
   int librtlerr;
   int dev_given = 0;
   int custom_ppm = 0;
-  int libzplayerr;
   int enable_biastee = 0;
   int circbuffersize;
   int reprintline;
   int outputFormat;
-  int muted;
   int recording;
+  int charposition;
+  int controldisabled;
+  float newfrequency;
   struct tm *timeinfo;
   time_t rawtime;
   char infostr[16];
   char fileUniqueStr[35];
   char *filenameExt;
-  
+
+  SDL_AudioSpec audioFormatDesired;
+  audioFormatDesired.freq = 48000;
+  audioFormatDesired.format = AUDIO_S16LSB;
+  audioFormatDesired.channels = 2;
+  audioFormatDesired.samples = 4096;
+  audioFormatDesired.callback = 0;
+  SDL_AudioSpec audioFormatObtained;
 
   // timeshift buffer size in kbytes
-  circbuffersize = 81920;
-  circbufferslots = (circbuffersize * 1024) / CIRCBUFFCLUSTER;
-  circbuffeshift=0;
+  circbuffersize = 184320;
+  _circbufferslots = (circbuffersize * 1024) / CIRCBUFFCLUSTER;
+  _circbuffeshift=0;
 
-  fprintf(stderr, "RTL FM Player Version %s (c) RafaelBF 2020.\n", VERSION);
+#ifdef _WIN32
+  SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+#else
+  nice(-5);
+#endif
 
+  printf("RTL FM Player Version %s (c) RafaelBF 2020.\n", VERSION);
 
-  // initialize libzplay
-  libzplay = zplay_CreateZPlay();
-  // chek if we have class instance
-  if(libzplay == 0) {
-    fprintf(stderr,"Can't initialize libZPlay !\n");
-    printf("\nPress [ENTER] to exit...");
-    fgetc(stdin);
+  if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+    fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
+    fprintf(stderr,"Press any key to exit\n");
+    _getch();
     exit(1);
   }
-  int libzplayver = zplay_GetVersion(libzplay);
-  fprintf(stderr,"libZPlay v.%i.%02i\r\n\r\n", libzplayver / 100, libzplayver % 100);
-
 
   dongle_init(&dongle);
   demod_init(&demod);
   output_init(&output);
   controller_init(&controller);
 
-  isStartStream = false;
+  _isStartStream = false;
 
   while((opt = getopt(argc, argv, "d:f:g:s:b:l:o:t:r:p:E:F:h:v:XYTV")) != -1)
   {
@@ -1428,7 +1505,7 @@ int main(int argc, char **argv)
 
     case 'V':
       fprintf(stderr, "Verbose mode\n");
-      beverbose=1;
+      _beverbose=1;
       break;
 
     case 'h':
@@ -1455,6 +1532,8 @@ int main(int argc, char **argv)
   } else {
     output.filename = argv[optind];
     filenameExt = strrchr(output.filename, '.');
+    if (!filenameExt)
+      strcat(output.filename, ".wav");
   }
 
   ACTUAL_BUF_LENGTH = lcm_post[demod.post_downsample] * DEFAULT_BUF_LENGTH;
@@ -1464,29 +1543,29 @@ int main(int argc, char **argv)
   }
 
   if (dongle.dev_index < 0) {
-    printf("\nPress [ENTER] to exit...");
-    fgetc(stdin);
+    fprintf(stderr,"Press any key to exit\n");
+    _getch();
     exit(1);
   }
 
   // allocate timeshift buffer
-  if (beverbose)
-    fprintf(stderr, "Allocating %u bytes\n", circbufferslots * CIRCBUFFCLUSTER);
-  circbuffer = (char *)malloc(circbufferslots * CIRCBUFFCLUSTER);
-  if (circbuffer==0) {
+  if (_beverbose)
+    fprintf(stderr, "Allocating %u bytes\n", _circbufferslots * CIRCBUFFCLUSTER);
+  _circbuffer = (char *)malloc(_circbufferslots * CIRCBUFFCLUSTER);
+  if (_circbuffer==0) {
     fprintf(stderr,"Can't allocate memmory for timeshift function\n");
-    printf("\nPress [ENTER] to exit...");
-    fgetc(stdin);
+    fprintf(stderr,"Press any key to exit\n");
+    _getch();
     exit(1);  
   }
 
 
   librtlerr = rtlsdr_open(&dongle.dev, (uint32_t) dongle.dev_index);
   if (librtlerr < 0) {
-    free(circbuffer);
+    free(_circbuffer);
     fprintf(stderr, "Failed to open rtlsdr device #%d.\n", dongle.dev_index);
-    printf("\nPress [ENTER] to exit...");
-    fgetc(stdin);
+    fprintf(stderr,"Press any key to exit\n");
+    _getch();
     exit(1);
   }
 #ifndef _WIN32
@@ -1508,7 +1587,7 @@ int main(int argc, char **argv)
 
   /* Set the tuner gain */
   if (dongle.gain == AUTO_GAIN) {
-    if (beverbose) {
+    if (_beverbose) {
       verbose_auto_gain(dongle.dev);
     } else {
       if ( rtlsdr_set_tuner_gain_mode(dongle.dev, 0) != 0 )
@@ -1521,7 +1600,7 @@ int main(int argc, char **argv)
 
   rtlsdr_set_bias_tee(dongle.dev, enable_biastee);
   if (enable_biastee)
-    if (beverbose)
+    if (_beverbose)
       fprintf(stderr, "activated bias-T on GPIO PIN 0\n");
 
   verbose_ppm_set(dongle.dev, dongle.ppm_error);
@@ -1547,72 +1626,60 @@ int main(int argc, char **argv)
   pthread_create(&dongle.thread, NULL, dongle_thread_fn, (void *) (&dongle));
 
   optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
-  if (beverbose) {
+  if (_beverbose) {
     verbose_set_frequency(dongle.dev, dongle.freq);
   } else {
     rtlsdr_set_center_freq(dongle.dev, dongle.freq);
   }
 
-  zplay_SetSettings(libzplay, sidAccurateLength, 0);
 
   if (demod.lpr.mode==2) {
-    if (beverbose)
-      fprintf(stderr, "Starting Stereo output\n");
-    libzplayerr = zplay_OpenStream(libzplay, 0, 1, WAVHeaderStereo, sizeof(WAVHeaderStereo), sfWav);
-  }  else {
-    if (beverbose)
+    if (_beverbose)
+      fprintf(stderr, "Starting Stereo output\n"); 
+  } else {
+    if (_beverbose)
       fprintf(stderr, "Starting Mono output\n");
-    libzplayerr = zplay_OpenStream(libzplay, 0, 1, WAVHeaderMono, sizeof(WAVHeaderMono), sfWav);
+    audioFormatDesired.channels = 1;
   }
 
-  if (libzplayerr==0) {
-    fprintf(stderr, "Error opening stream: \"%s\". \n", zplay_GetError(libzplay) );
-    printf("\nPress [ENTER] to exit...p");
-    fgetc(stdin);
-    do_exit=1;
+  _audio_device = SDL_OpenAudioDevice(NULL, 0, &audioFormatDesired, &audioFormatObtained, 0);
+  if (_audio_device==0) {
+    fprintf(stderr,"Could not retrieve a valid audio device: %s.\n", SDL_GetError());
+    fprintf(stderr,"Press any key to exit\n");
+    _getch();
+    _do_exit=1;  
   } else {
+    if (_beverbose)    
+      fprintf(stderr,"Opened audio, device %s, freq %d, size %d, format %d, channels %d, samples %d", SDL_GetCurrentAudioDriver(),
+             audioFormatObtained.freq, audioFormatObtained.size, audioFormatObtained.format, audioFormatObtained.channels, audioFormatObtained.samples);
+  }
 
-    if (output.filename!=0) {
-      outputFormat=sfMp3;
-         
-      if (filenameExt && (!strcmp(filenameExt, ".mp3")))
-        outputFormat = sfMp3;
-      else if (filenameExt && (!strcmp(filenameExt, ".ogg")))
-        outputFormat = sfOgg;
-      else if (filenameExt && (!strcmp(filenameExt, ".wav")))
-        outputFormat = sfWav;
-      else if (filenameExt && (!strcmp(filenameExt, ".flac")))
-        outputFormat = sfFLAC;
-      else if (filenameExt && (!strcmp(filenameExt, ".aac")))
-        outputFormat = sfAacADTS;
 
-    
-      libzplayerr = zplay_SetWaveOutFile(libzplay, output.filename, outputFormat , 0);
-      if (libzplayerr==0) {
-        fprintf(stderr, "Error saving to file. \"%s\". \n", zplay_GetError(libzplay) );
-        output.filename=0;
-      }
-    }
-
-    libzplayerr = zplay_Play(libzplay);
-    if (libzplayerr!=0) {
-      isStartStream = true;
+  // filename given at command line
+  controldisabled=0;
+  if (output.filename!=0) {
+    output.file = InitWaveOut(output.filename,demod.lpr.mode);
+    if (output.file==NULL) {
+      output.filename=0;
+      fprintf(stderr, "Error saving to file. %s\r", strerror( errno) );
     } else {
-      do_exit=1;
+      controldisabled=1;
     }
-  
-  } // noerror
+  }
+
+  SDL_PauseAudioDevice(_audio_device, 0);
+  _isStartStream = true;
 
   //////////////////// MAIN LOOP //////////////////////
 
   reprintline=1;
-  muted=0;
+  _audio_muted=0;
   recording=0;
 
-      printf("\n+---------------------------------  k e y s ---------------------------------+\n");
+      printf("\n+--------------------------------  k e y s ----------------------------------+\n");
 
-  if (output.filename==0) {
-    printf("| W: +100KHz S: -100KHz                                                      |\n");
+  if (!controldisabled) {
+    printf("| W: +50KHz S: -50KHz  T: Type a frequency                                   |\n");
     printf("| A: TimeShift [Past]  D: TimeShift [Present]  L: TimeShift [Live]           |\n");
     printf("| M: Mute/Unmute                                                             |\n");
     printf("| R: Record/Stop                                                             |\n");
@@ -1630,17 +1697,16 @@ int main(int argc, char **argv)
   }
 
 
-  while (!do_exit)
+  while (!_do_exit)
   {
-    usleep(100000);
 
     // [TimeShift100%] [Mute] [Rec]
-    if (circbuffeshift <= 0) {
+    if (_circbuffeshift <= 0) {
       strcpy(infostr,"[Live] ");
     } else {
-      sprintf(infostr,"[TimeShift%u%%] ",((circbuffeshift *100) / circbufferslots));
+      sprintf(infostr,"[TimeShift%u%%] ",((_circbuffeshift *100) / _circbufferslots));
     }
-    if (muted) {
+    if (_audio_muted) {
       strcat(infostr, "[Mute]  ");
       if (recording)
         strcat(infostr, "[Rec] ");
@@ -1663,94 +1729,156 @@ int main(int argc, char **argv)
     }
 
     keybrd=_getch();
-    if (beverbose)
+    if (_beverbose)
       fprintf(stderr,"key=%d",keybrd);       
 
-    if (output.filename==0) {
+    if (!controldisabled) {
 
-    if ((keybrd==119) || (keybrd==87)) { // W
-      controller.freqs[controller.freq_len-1] += 100000;
-      optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
-      if ( rtlsdr_set_center_freq(dongle.dev, dongle.freq) < 0 )
-        fprintf(stderr, "WARNING: Failed to set center freq.\n");
-      circbuffeshift=0;
-      reprintline=1;
-    }
-    if ((keybrd==115) || (keybrd==83)) { // S
-      controller.freqs[controller.freq_len-1] -= 100000;
-      optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
-      if ( rtlsdr_set_center_freq(dongle.dev, dongle.freq) < 0 )
-        fprintf(stderr, "WARNING: Failed to set center freq.\n");
-      circbuffeshift=0;
-      reprintline=1;
-    }
-    if ((keybrd==97) || (keybrd==65)) { // A
-      circbuffeshift+=20;
-      reprintline=1;
-    }
-    if ((keybrd==100) || (keybrd==68)) { // D
-      circbuffeshift-=20;
-      reprintline=1;
-    }
-    if ((keybrd==108) || (keybrd==76)) { // P
-      circbuffeshift=0;
-      reprintline=1;
-    }
-    if ((keybrd==109) || (keybrd==77)) { // M
-      if (!muted) {
-        zplay_SetPlayerVolume(libzplay, 0, 0);
-        muted=1;
-      } else {
-        zplay_SetPlayerVolume(libzplay, 100, 100);
-        muted=0;
-      }
-      reprintline=1;
-    }
-    if ((keybrd==114) || (keybrd==82)) { // R
-      if (!recording) {
-        time ( &rawtime );
-        timeinfo = localtime ( &rawtime );
-        strftime(fileUniqueStr, 34,"Recording_%Y-%m-%d_%H-%M.mp3",timeinfo);
-        libzplayerr = zplay_SetWaveOutFile(libzplay, fileUniqueStr, sfMp3 , 1);
-        if (libzplayerr==0) {
-          fprintf(stderr, "Error saving to file. \"%s\". \n", zplay_GetError(libzplay) );
-          output.filename=0;
+      if ((keybrd==119) || (keybrd==87)) { // W
+        controller.freqs[controller.freq_len-1] += 50000;
+        if (controller.freqs[controller.freq_len-1] > 108000000)
+          controller.freqs[controller.freq_len-1] = 76000000;
+        optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
+        if ( rtlsdr_set_center_freq(dongle.dev, dongle.freq) < 0 ) {
+          fprintf(stderr, "WARNING: Failed to set center freq.\r");
         } else {
-          libzplayerr = zplay_Play(libzplay);
-          if (libzplayerr==0) {
-            fprintf(stderr, "Error saving to file. \"%s\". \n", zplay_GetError(libzplay) );
+          _circbuffeshift=0;
+          reprintline=1;
+          if (SDL_GetQueuedAudioSize(_audio_device) > CIRCBUFFCLUSTER * 5)
+            SDL_ClearQueuedAudio(_audio_device);
+        }
+      }
+      if ((keybrd==115) || (keybrd==83)) { // S
+        controller.freqs[controller.freq_len-1] -= 50000;
+        if (controller.freqs[controller.freq_len-1] < 76000000)
+          controller.freqs[controller.freq_len-1] = 108000000;
+        optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
+        if ( rtlsdr_set_center_freq(dongle.dev, dongle.freq) < 0 ) {
+          fprintf(stderr, "WARNING: Failed to set center freq.\r");
+        } else {
+          _circbuffeshift=0;
+          reprintline=1;
+          if (SDL_GetQueuedAudioSize(_audio_device) > CIRCBUFFCLUSTER * 5)
+            SDL_ClearQueuedAudio(_audio_device);
+        }
+      }
+      if ((keybrd==116) || (keybrd==84)) { // T
+        printf("                                                  \r"); // clear this line
+        printf("Type the new frequency: ");
+        newfrequency=0;      
+
+        charposition=0;
+        do {
+          keybrd=_getch();
+          if ( ((keybrd >= '0') && (keybrd <= '9')) || (keybrd == 46) || (keybrd == 44)  ) {
+            infostr[charposition++] = keybrd;
+            printf("%c", keybrd);
+          } else if ( (keybrd==27) || (keybrd==13) || (keybrd==10) ) {
+            keybrd=255;
+          }        
+        } while ( (keybrd!=255) && (charposition<5) );
+        infostr[charposition]=0;
+
+        printf("\r");
+        newfrequency = atof(infostr);
+        newfrequency*=1000000;
+
+        if ( (newfrequency <= 108000000) && (newfrequency >= 76000000) ) {
+          controller.freqs[controller.freq_len-1] = (uint32_t)newfrequency;
+          optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
+
+          if ( rtlsdr_set_center_freq(dongle.dev, dongle.freq) < 0 ) {
+            fprintf(stderr, "WARNING: Failed to set center freq.\r");
+          } else {
+            _circbuffeshift=0;
+            reprintline=1;
+            if (SDL_GetQueuedAudioSize(_audio_device) > CIRCBUFFCLUSTER * 5)
+              SDL_ClearQueuedAudio(_audio_device);
+          }
+        
+          } else {
+            reprintline=1;
+        }
+      } // if keybrd
+
+      if ((keybrd==97) || (keybrd==65)) { // A
+        _circbuffeshift+=20;
+        reprintline=1;
+        if (SDL_GetQueuedAudioSize(_audio_device) > CIRCBUFFCLUSTER * 5)
+          SDL_ClearQueuedAudio(_audio_device);
+      }
+      if ((keybrd==100) || (keybrd==68)) { // D
+        _circbuffeshift-=20;
+        reprintline=1;
+        if (SDL_GetQueuedAudioSize(_audio_device) > CIRCBUFFCLUSTER * 5)
+          SDL_ClearQueuedAudio(_audio_device);
+      }
+      if ((keybrd==108) || (keybrd==76)) { // P
+        _circbuffeshift=0;
+        reprintline=1;
+      }
+      if ((keybrd==109) || (keybrd==77)) { // M
+        if (!_audio_muted) {
+          SDL_PauseAudioDevice(_audio_device, 1);
+          _audio_muted=1;
+        } else {
+          if (SDL_GetQueuedAudioSize(_audio_device) > CIRCBUFFCLUSTER * 5)
+            SDL_ClearQueuedAudio(_audio_device);
+          SDL_PauseAudioDevice(_audio_device, 0);
+          _audio_muted=0;
+        }
+        reprintline=1;
+      }
+
+      if ((keybrd==114) || (keybrd==82)) { // R
+        if (!recording) {
+          time ( &rawtime );
+          timeinfo = localtime ( &rawtime );
+          
+          strftime(fileUniqueStr, 34,"FMrecord_%Y-%m-%d_%H-%M-%S.wav",timeinfo);
+          output.file = InitWaveOut(fileUniqueStr,demod.lpr.mode);
+          
+          if (output.file==NULL) {
+            fprintf(stderr, "Error saving to file. %s\r", strerror( errno) );
           } else {
             recording=1;
+            reprintline=1;
+            output.filename=fileUniqueStr;
           }
+        } else { // recording
+          output.filename=0;
+          CloseWaveOut(output.file);
+          recording=0;
+          reprintline=1;
         }
-      } else { // recording
-        zplay_SetWaveOutFile(libzplay, "", sfUnknown , 1);
-        zplay_Play(libzplay);
-        recording=0;
       }
-     reprintline=1;
-    }
-
-    } // output.filename
+      
+    } // controldisabled
 
     if ((keybrd==120) || (keybrd==88)) { // X
-      do_exit = 1;
+      _do_exit = 1;
       fflush(stdin); 
     }
 
-
-  } // while !do_exit
+  } // while !_do_exit
   /////////////////////////////////////////////////////
 
 
 
-  if (do_exit) {
+  if (_do_exit) {
     fprintf(stderr, "\nUser cancel, exiting...\n");
     } else {
     fprintf(stderr, "\nLibrary error, exiting...\n" );
   }
 
-  if (beverbose)
+  if (output.filename!=0) {
+    output.filename=0;
+    CloseWaveOut(output.file);
+  }
+  
+  SDL_CloseAudioDevice(_audio_device);
+
+  if (_beverbose)
     fprintf(stderr, "Closing threads\n");
 
   // wait for dongle thread
@@ -1763,23 +1891,23 @@ int main(int argc, char **argv)
   safe_cond_signal(&controller.hop, &controller.hop_m);
   pthread_join(controller.thread, NULL);
 
-  zplay_Close(libzplay);
-  
-  if (beverbose)
+  if (_beverbose)
     fprintf(stderr, "Closing demodulator\n");
   demod_cleanup(&demod);
-  if (beverbose)
+  if (_beverbose)
     fprintf(stderr, "Closing output\n");
   output_cleanup(&output);
-  if (beverbose)
+  if (_beverbose)
     fprintf(stderr, "Closing controller\n");
   controller_cleanup(&controller);
 
-  free(circbuffer);
+  free(_circbuffer);
 
-  if (beverbose)
+  if (_beverbose)
     fprintf(stderr, "Closing dongle\n");
   rtlsdr_close(dongle.dev);
+
+  SDL_Quit();
 
   return librtlerr >= 0 ? librtlerr : -librtlerr;
 }

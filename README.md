@@ -2,56 +2,62 @@ RTL SDR FM Player
 ===================
 Turns your Realtek RTL2832 based dongle into a SDR stereo FM radio receiver.
 TimeShift function can go back some minutes in time to listen it again.
-Recording function to write audio files.
-Runs on Windows console only.
+Recording function to save Wav files.
+
 
 Description
 -----------
 **RTL FM Player** is a small tool to listen FM stereo radio by using a DVB-T dongle.
-Outputs stereo audio directly to any Windows sond card.
-Can record audio to .aac .flac .mp3 .ogg .wav file formats.
+Outputs stereo audio to sondcard using SDL library.
+Can record audio .wav file format.
 
 The DVB-T dongle has to be based on the Realtek RTL2832U.
 See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
 
+
 Installation
 ------------
 - Download Zadig driver https://zadig.akeo.ie/ and follow their guide to install.
-- Download a compiled RTL FM Player here https://github.com/rafaelferrari0/rtl_fm_player/releases/
-- Or compile it using MinGW
+- Download a compiled **RTL FM Player** HERE
+- Or compile it using MinGW32 (windows)
 
 
 Usage
 -----
 
-    Double click rtl_fm_player.exe to open console.
+    Double click rtl_fm_player.exe to run on Windows.
+    Type ./rtl_fm_player on Linux console.
+    
     Use keyboard to control frequency, timeshift, mute and recording.
 
     You can also open Command Prompt and type parameters manually:
     C:\>rtl_fm_player.exe -h
+    ./rtl_fm_player -h
+
 
 Common parameters
 -------
 
     Show all available parameters
-    C:\>rtl_fm_player.exe -h
+    rtl_fm_player -h
 
     Start and tune to frequency in Hz 
     (97.7Mhz)
-    C:\>rtl_fm_player.exe -f 97700000
+    rtl_fm_player -f 97700000
 
-    Tune to frequency and record audio to FileName.mp3
+    Tune to frequency and record audio to FileName.wav
     (Keyboard controls disabled)
-    C:\>rtl_fm_player.exe -f 97700000 FileName.mp3
+    rtl_fm_player -f 97700000 FileName.wav
 
 
 Performance
 --------------
 On modern PCs (x86, x64) mono and stereo decoding should be possible easily.
 
+
 Limitations
 --------------
-Only runs on Windows because it uses **LibZPlay** for sound output.
+Latency increase if SDL2 audio queue becomes larger. I clean the buffer when changing stations or Timeshifting.
 
 
 Building
@@ -59,28 +65,20 @@ Building
 
 `Optional guide to compile RTL FM Player sources using MinGW on Windows.`
 
-`Not tested with MinGW64`
-
-1. Install MinGW32 on default location (\MinGW) with packages "mingw32-base" and "mingw32-pthreads-w32".
+1. Install MinGW on default location (\MinGW) with packages "mingw32-base" and "mingw32-pthreads-w32".
 
 2. Install CMake on \MinGW\CMake
 
-3. Download http://sourceforge.net/projects/libzplay/files/2.02/libzplay-2.02-sdk.7z/download 
-    - extract (7zip file)\libzplay-2.02-sdk\C++\libzplay.a to \MinGW\lib
-    - `(7zip file)\libzplay-2.02-sdk\libzplay.dll will be requered when runing rtl_fm_streamer.exe`
+3. Download http://libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
+    - extract (tar.gz file)\i686-w64-mingw32\lib\libSDL2.dll.a to \MinGW\lib
+    - extract the folder (tar.gz file)\i686-w64-mingw32\include\SDL2 to \MinGW\include\SDL2
+    - `(tar.gz file)\i686-w64-mingw32\bin\SDL2.dll will be requered when runing rtl_fm_streamer.exe`
 
-4. Download this patched libzplay.h and copy to \MinGW\include
-    - https://github.com/rafaelferrari0/rtl_fm_player/blob/master/patches/libzplay.h
-
-5. Download https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download 
+4. Download https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download 
     - extract (7zip file)\MinGW32\dll\libusb-1.0.dll.a to \MinGW\lib 
     - extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
     - `(7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe`
 
-6. Clone or download the source code and extract to \MinGW\rtl_fm_player
-    - https://github.com/rafaelferrari0/rtl_fm_player/releases/
-
-7. Run rtl_fm_player\build\1st-cmake.bat and 2nd-make.bat
 
 Credits
 -------

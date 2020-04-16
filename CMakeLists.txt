@@ -78,13 +78,7 @@ find_package(Threads)
 #SET(CMAKE_HAVE_THREADS_LIBRARY 1)
 #SET(THREADS_FOUND TRUE)
 
-find_package(LibZPlay)
-
-##SET(CMAKE_ZPLAY_LIBS_INIT "-lzplay")
-#SET(CMAKE_ZPLAY_LIBS_INIT "/MinGW/lib/libzplay.a")
-#SET(CMAKE_HAVE_ZPLAY_LIBRARY 1)
-#SET(ZPLAY_FOUND TRUE)
-
+find_package(SDL2)
 
 if(NOT LIBUSB_FOUND)
     message(FATAL_ERROR "LibUSB 1.0 required to compile rtl-sdr")
@@ -94,8 +88,8 @@ if(NOT Threads_FOUND)
     message(FATAL_ERROR "pthreads(-win32) required to compile rtl-sdr")
 endif()
 
-if(NOT LIBZPLAY_FOUND)
-    message(FATAL_ERROR "libZPlay required to compile rtl-sdr")
+if(NOT SDL2_FOUND)
+    message(FATAL_ERROR "SDL2 required to compile rtl-sdr")
 endif()
 
 
@@ -105,6 +99,7 @@ endif()
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${LIBUSB_INCLUDE_DIR}
+    ${SDL2_INCLUDE_DIR}
     ${THREADS_PTHREADS_INCLUDE_DIR}
 )
 
