@@ -6,7 +6,7 @@ if(NOT LIBUSB_FOUND)
     /usr/include/libusb-1.0
     /usr/include
     /usr/local/include
-    /MinGW/include
+    ${C_INCLUDE_PATH}
   )
 
 #standard library name for libusb-1.0
@@ -24,6 +24,7 @@ endif()
     ${LIBUSB_PKG_LIBRARY_DIRS}
     /usr/lib
     /usr/local/lib
+    ${LIBRARY_PATH}
   )
 
 include(CheckFunctionExists)

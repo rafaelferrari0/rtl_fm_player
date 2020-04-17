@@ -1,14 +1,12 @@
 if(NOT SDL2_FOUND)
-#  pkg_check_modules (SDL2_PKG libSDL2)
   find_path(SDL2_INCLUDE_DIRS NAMES SDL.h
     PATHS
     ${SDL2_PKG_INCLUDE_DIRS}
     /usr/include
     /usr/local/include
-    /MinGW/include
-    /MinGW/include/SDL2
     ${prefix}/include/SDL2
     /usr/include/SDL2
+    ${C_INCLUDE_PATH}/SDL2
   )
 
 # set(SDL2_LIBRARIES "-L${SDL2_LIBDIR}  -lmingw32 -lSDL2 -mwindows")
@@ -23,6 +21,7 @@ set(libSDL21_library_names libSDL2 SDL2)
     /usr/lib
     /usr/local/lib
     /usr/lib/x86_64-linux-gnu
+    ${LIBRARY_PATH}
   )
 
 include(CheckFunctionExists)

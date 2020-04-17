@@ -3,22 +3,20 @@ IF(WIN32 AND NOT CYGWIN AND THREADS_USE_PTHREADS_WIN32)
 ENDIF()
 
 if(NOT Threads_FOUND)
-#  pkg_check_modules (LIBUSB_PKG pthreads)
   find_path(THREADS_PTHREADS_INCLUDE_DIR NAMES pthread.h
     PATHS
     /usr/include
     /usr/local/include
-    /MinGW/include
+    ${C_INCLUDE_PATH}
   )
 
 #standard library name for pthrreads
 
 IF(_Threads_ptwin32)
-set(pthreads_library_names libpthreadGC-3.a)
+set(pthreads_library_names libpthreadGC-3.a libwinpthread.a)
 ELSE()
 set(pthreads_library_names pthread)
 ENDIF()
-
 
 
   find_library(CMAKE_THREAD_LIBS_INIT
@@ -26,7 +24,7 @@ ENDIF()
     PATHS
     /usr/lib
     /usr/local/lib
-    /MinGW/lib
+    ${LIBRARY_PATH}
   )
 
 include(CheckFunctionExists)
@@ -38,12 +36,6 @@ if(CMAKE_THREAD_LIBS_INIT)
 endif()
 
 
-
-
-#CHECK_FUNCTION_EXISTS("libusb_error_name" HAVE_LIBUSB_ERROR_NAME)
-#if(HAVE_LIBUSB_ERROR_NAME)
-#    add_definitions(-DHAVE_LIBUSB_ERROR_NAME=1)
-#endif(HAVE_LIBUSB_ERROR_NAME)
 
 if(THREADS_PTHREADS_INCLUDE_DIR AND CMAKE_THREAD_LIBS_INIT)
   set(Threads_FOUND TRUE CACHE INTERNAL "pthreads found")
