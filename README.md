@@ -65,7 +65,7 @@ Building
 
 
 #### Compiling RTL FM Player sources on Linux:
-`(tested on Debian Stretch)`
+`Tested on Debian Stretch`
 
 
 1. sudo `apt-get install cmake`
@@ -79,14 +79,14 @@ Building
 
 
 #### Compiling RTL FM Player sources using MinGW on Windows:
+`Using old MinGW installer for Win32`
 
-
-1. Download mingw-get-setup https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/
-    - Install MinGW on \MinGW (C:, D: ...) with packages `mingw32-base-bin` and `mingw32-pthreads-w32`
-2. Install CMake on \MinGW\CMake
+1. Download **mingw-get-setup** https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/
+    - Install MinGW on `\MinGW` (C:, D: ...) with packages `mingw32-base-bin` and `mingw32-pthreads-w32`
+2. Install **CMake** on `\MinGW\CMake`
 3. Download http://libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
-    - extract (tar.gz file)\i686-w64-mingw32\lib\libSDL2.dll.a to \MinGW\lib
-    - extract the folder (tar.gz file)\i686-w64-mingw32\include\SDL2 to \MinGW\include\SDL2
+    - extract `(tar.gz file)\i686-w64-mingw32\lib\libSDL2.dll.a` to `\MinGW\lib`
+    - extract the folder `(tar.gz file)\i686-w64-mingw32\include\SDL2` to `\MinGW\include\SDL2`
     - `(tar.gz file)\i686-w64-mingw32\bin\SDL2.dll will be requered when runing rtl_fm_streamer.exe`
 4. Download https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download 
     - extract (7zip file)\MinGW32\dll\libusb-1.0.dll.a to \MinGW\lib 
@@ -100,8 +100,7 @@ Building
 
 
 #### Compiling RTL FM Player sources using MinGW64 on Windows:
-
-MinGW64 manual installation, you can use any name without spaces in root drive, (eg: C:\MinGW64-RTL, D:\MinGWTemp). In this example we install to C:\MinGW64
+`MinGW64 manual installation. You can install to any directory name without spaces in root drive, (eg: C:\MinGW64-RTL, D:\MinGWTemp). In this example we install to C:\MinGW64`
 
 
 1. Download latest **MinGW64** toolchain targeting architecture **x86_64**, **win32** threads, **seh** exception
@@ -145,6 +144,10 @@ MinGW64 manual installation, you can use any name without spaces in root drive, 
 13. Run:
     - `1st-cmake.bat`
     - `2nd-make.bat`
+14. If sucessfull, compiled `rtl_fm_player` will be on `src` subdirectory.
+    - Copy **SDL2** zip file `\x86_64-w64-mingw32\bin\SDL2.dll` to `src`
+    - Copy **libusb-1.0** 7zip file `\MinGW64\dll\libusb-1.0.dll` to `src`
+    
 
 Credits
 -------
