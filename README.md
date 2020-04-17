@@ -7,18 +7,27 @@ Recording function to save Wav files.
 
 Description
 -----------
-**RTL FM Player** is a small tool to listen FM stereo radio by using a DVB-T dongle.
+**RTL FM Player** is a small tool to listen FM stereo radio by using a compatible DVB-T dongle.
+Is a console application that runs on Linux and Windows, all commands like changing stations and timeshifting is controlled by keyboard keys.
 Outputs stereo audio to sondcard using SDL library.
 Can record audio .wav file format.
 
 The DVB-T dongle has to be based on the Realtek RTL2832U.
 See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
+You need to install a new driver to use this dongle.
 
 
 Installation
 ------------
-- Download Zadig driver https://zadig.akeo.ie/ and follow their guide to install.
-- Download a compiled **RTL FM Player**: [Releases](https://github.com/rafaelferrari0/rtl_fm_player/releases)
+- Download Zadig driver https://zadig.akeo.ie/.
+
+    1. Plug in the RTL-SDR.
+    2. Run Zadig as administrator by right clicking it and choosing run as administrator.
+    3. Go to Options -> List all devices and make sure it is checked.
+    4. In the drop down box choose Bulk-In, Interface (Interface 0). This may also sometimes show up as something prefixed with “RTL28328U”. That choice is also valid.
+    5. Make sure that WinUSB is selected as the target driver and click on Replace Driver.
+
+- Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases)
 - Optional. Compile it on Linux, or Windows using MinGW32.
 
 
