@@ -76,7 +76,8 @@ Building
 
 `Compiling RTL FM Player sources using MinGW on Windows.`
 
-1. Install MinGW on \MinGW (C:, D: ...) with packages "mingw32-base-bin" and "mingw32-pthreads-w32".
+1. Download mingw-get-setup https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/
+    - Install MinGW on \MinGW (C:, D: ...) with packages "mingw32-base-bin" and "mingw32-pthreads-w32".
 2. Install CMake on \MinGW\CMake
 3. Download http://libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
     - extract (tar.gz file)\i686-w64-mingw32\lib\libSDL2.dll.a to \MinGW\lib
