@@ -18,8 +18,8 @@ See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
 Installation
 ------------
 - Download Zadig driver https://zadig.akeo.ie/ and follow their guide to install.
-- Download a compiled **RTL FM Player** HERE
-- Or compile it using MinGW32 (windows)
+- Download a compiled **RTL FM Player**: [Releases](https://github.com/rafaelferrari0/rtl_fm_player/releases)
+- Optional. Compile it on Linux, or Windows using MinGW32.
 
 
 Usage
@@ -63,43 +63,40 @@ Latency increase if SDL2 audio queue becomes larger. I clean the buffer when cha
 Building
 -------
 
-`Compiling on Linux`
-    sudo apt-get install cmake
-    sudo apt-get install libusb-1.0-0-dev
-    sudo apt-get install libsdl2-dev
-
-Extract this project source to any directory
-Enter subdirectory "build"
-Run
-    - 1st-cmake.bat
-    - 2nd-make.bat
+`Compiling RTL FM Player sources on Linux`
+1. sudo `apt-get install cmake`
+2. sudo `apt-get install libusb-1.0-0-dev`
+3. sudo `apt-get install libsdl2-dev`
+4. Extract this project source to any directory
+5. Enter subdirectory "build"
+6. Run:
+    - `./1st-cmake.sh`
+    - `./2nd-make.sh`
 
 
 `Compiling RTL FM Player sources using MinGW on Windows.`
 
 1. Install MinGW on default location (\MinGW) with packages "mingw32-base" and "mingw32-pthreads-w32".
-
 2. Install CMake on \MinGW\CMake
-
 3. Download http://libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
     - extract (tar.gz file)\i686-w64-mingw32\lib\libSDL2.dll.a to \MinGW\lib
     - extract the folder (tar.gz file)\i686-w64-mingw32\include\SDL2 to \MinGW\include\SDL2
     - `(tar.gz file)\i686-w64-mingw32\bin\SDL2.dll will be requered when runing rtl_fm_streamer.exe`
-
 4. Download https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download 
     - extract (7zip file)\MinGW32\dll\libusb-1.0.dll.a to \MinGW\lib 
     - extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
     - `(7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe`
-
-Extract this project source to any subdiretory below \MinGW\
-Enter subdirectory "build"
-Run
-    - 1st-cmake.bat
-    - 2nd-make.bat
+5. Extract this project source to any subdirectory below \MinGW\
+6. Enter subdirectory "build"
+7. Run:
+    - `1st-cmake.bat`
+    - `2nd-make.bat`
 
 Credits
 -------
 This project is based on RTL SDR FM Streamer by Albrecht Lohoefener
+
+Simple DirectMedia Layer development library
 
 
 Similar Projects
