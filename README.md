@@ -63,10 +63,10 @@ Latency increase if SDL2 audio queue becomes larger. I clean the buffer when cha
 Building
 -------
 
-```
-Compiling RTL FM Player sources on Linux:
-(tested on Debian Stretch)
-```
+
+#### Compiling RTL FM Player sources on Linux:
+`(tested on Debian Stretch)`
+
 
 1. sudo `apt-get install cmake`
 2. sudo `apt-get install libusb-1.0-0-dev`
@@ -78,9 +78,8 @@ Compiling RTL FM Player sources on Linux:
     - `./2nd-make.sh`
 
 
-```
-Compiling RTL FM Player sources using MinGW on Windows:
-```
+#### Compiling RTL FM Player sources using MinGW on Windows:
+
 
 1. Download mingw-get-setup https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/
     - Install MinGW on \MinGW (C:, D: ...) with packages "mingw32-base-bin" and "mingw32-pthreads-w32".
@@ -99,10 +98,10 @@ Compiling RTL FM Player sources using MinGW on Windows:
     - `1st-cmake.bat`
     - `2nd-make.bat`
 
-```
-Compiling RTL FM Player sources using MinGW64 on Windows:
+
+#### Compiling RTL FM Player sources using MinGW64 on Windows:
 (MinGW64 manual installation, you can use any name without spaces in root drive, eg: C:\MinGW64-RTL, D:\MinGWTemp)
-```
+
 
 1. Download latest **MinGW64** toolchain targeting architecture **x86_64**, **win32** threads, **seh** exception
     - https://sourceforge.net/projects/mingw-w64/files/
@@ -128,8 +127,8 @@ Compiling RTL FM Player sources using MinGW64 on Windows:
 3. Download **SDL2** Development Libraries for MinGW
     - https://www.libsdl.org/download-2.0.php
     - tested: [SDL2-devel-2.0.12-mingw.tar.gz](https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz)
-3a. Extract SDL2 zip file *x86_64-w64-mingw32\lib\libSDL2.dll.a* to *\mingw64\x86_64-w64-mingw32\lib\*
-3b. Extract SDL2 zip directory *x86_64-w64-mingw32\include\SDL2* to *\mingw64\x86_64-w64-mingw32\include\SDL2*
+3a. Extract SDL2 zip file _x86_64-w64-mingw32\lib\libSDL2.dll.a_ to _\mingw64\x86_64-w64-mingw32\lib\_
+3b. Extract SDL2 zip directory _x86_64-w64-mingw32\include\SDL2_ to _\mingw64\x86_64-w64-mingw32\include\SDL2_
     ```
     C:\mingw64\x86_64-w64-mingw32\include\SDL2\
                                               \SDL.h
@@ -137,9 +136,14 @@ Compiling RTL FM Player sources using MinGW64 on Windows:
 4. Download **libusb-1.0** 7zip file
     - https://sourceforge.net/projects/libusb/files/libusb-1.0/
     - tested: [libusb-1.0.23.7z](https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download)
-4a. Extract libusb Zip *MinGW64\dll\libusb-1.0.dll.a* to *\mingw64\x86_64-w64-mingw32\lib\*
-4b. Extract libusb Zip *include\libusb-1.0\libusb.h* to *\mingw64\x86_64-w64-mingw32\include\*
-    
+4a. Extract libusb Zip `MinGW64\dll\libusb-1.0.dll.a` to `\mingw64\x86_64-w64-mingw32\lib\`
+4b. Extract libusb Zip `include\libusb-1.0\libusb.h` to `\mingw64\x86_64-w64-mingw32\include\`
+
+5. Extract this project source to any subdirectory below `\mingw64\`
+6. Enter subdirectory `\mingw64\[projectsourcedirectory]\build\mingw64`
+7. Run:
+    - `1st-cmake.bat`
+    - `2nd-make.bat`
 
 Credits
 -------
