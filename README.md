@@ -107,17 +107,17 @@ MinGW64 manual installation, you can use any name without spaces in root drive, 
 1. Download latest **MinGW64** toolchain targeting architecture **x86_64**, **win32** threads, **seh** exception
     - https://sourceforge.net/projects/mingw-w64/files/
     - tested: [x86_64-8.1.0-release-win32-seh-rt_v6-rev0.7z](https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-win32/seh/x86_64-8.1.0-release-win32-seh-rt_v6-rev0.7z/download)
-1a. Extract the Toolchain 7zip file to root directory, keeping the structure:
+2. Extract the Toolchain 7zip file to root directory, keeping the structure:
     ```
     C:\mingw64\
               \bin
               \etc
               ...
     ```
-2. Download **CMake** Windows win64-x64 ZIP
+3. Download **CMake** Windows win64-x64 ZIP
     - https://cmake.org/download/
     - tested: [cmake-3.17.1-win64-x64.zip](https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-win64-x64.zip)
-2a. Extract CMake Zip file inside C:\MinGW64\CMake directory, keeping the structure:
+4. Extract CMake Zip file inside C:\MinGW64\CMake directory, keeping the structure:
     ```
     C:\mingw64\cmake\
               \cmake\bin
@@ -125,24 +125,24 @@ MinGW64 manual installation, you can use any name without spaces in root drive, 
               \cmake\man
               \cmake\share
     ```
-3. Download **SDL2** Development Libraries for MinGW
+5. Download **SDL2** Development Libraries for MinGW
     - https://www.libsdl.org/download-2.0.php
     - tested: [SDL2-devel-2.0.12-mingw.tar.gz](https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz)
-3a. Extract SDL2 zip file `x86_64-w64-mingw32\lib\libSDL2.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
-3b. Extract SDL2 zip directory `x86_64-w64-mingw32\include\SDL2` to `c:\mingw64\x86_64-w64-mingw32\include\SDL2`
+6. Extract SDL2 zip file `x86_64-w64-mingw32\lib\libSDL2.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
+7. Extract SDL2 zip directory `x86_64-w64-mingw32\include\SDL2` to `c:\mingw64\x86_64-w64-mingw32\include\SDL2`
     ```
     C:\mingw64\x86_64-w64-mingw32\include\SDL2\
                                               \SDL.h
     ```
-4. Download **libusb-1.0** 7zip file
+8. Download **libusb-1.0** 7zip file
     - https://sourceforge.net/projects/libusb/files/libusb-1.0/
     - tested: [libusb-1.0.23.7z](https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download)
-4a. Extract libusb Zip `MinGW64\dll\libusb-1.0.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
-4b. Extract libusb Zip `include\libusb-1.0\libusb.h` to `c:\mingw64\x86_64-w64-mingw32\include\`
+9. Extract libusb Zip `MinGW64\dll\libusb-1.0.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
+10. Extract libusb Zip `include\libusb-1.0\libusb.h` to `c:\mingw64\x86_64-w64-mingw32\include\`
 
-5. Extract this project source to any subdirectory below `c:\mingw64\`
-6. Enter subdirectory `c:\mingw64\[projectsourcedirectory]\build\mingw64`
-7. Run:
+11. Extract this project source to any subdirectory below `c:\mingw64\`
+12. Enter subdirectory `c:\mingw64\[projectsourcedirectory]\build\mingw64`
+13. Run:
     - `1st-cmake.bat`
     - `2nd-make.bat`
 
