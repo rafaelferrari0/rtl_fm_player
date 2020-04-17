@@ -101,7 +101,7 @@ Building
 
 #### Compiling RTL FM Player sources using MinGW64 on Windows:
 
-MinGW64 manual installation, you can use any name without spaces in root drive, eg: C:\MinGW64-RTL, D:\MinGWTemp). In this example we install to C:\MinGW64
+MinGW64 manual installation, you can use any name without spaces in root drive, (eg: C:\MinGW64-RTL, D:\MinGWTemp). In this example we install to C:\MinGW64
 
 
 1. Download latest **MinGW64** toolchain targeting architecture **x86_64**, **win32** threads, **seh** exception
@@ -117,7 +117,7 @@ MinGW64 manual installation, you can use any name without spaces in root drive, 
 3. Download **CMake** Windows win64-x64 ZIP
     - https://cmake.org/download/
     - tested: [cmake-3.17.1-win64-x64.zip](https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-win64-x64.zip)
-4. Extract CMake Zip file inside C:\MinGW64\CMake directory, keeping the structure:
+4. Extract CMake Zip file inside `C:\MinGW64\CMake` directory, keeping the structure:
     ```
     C:\mingw64\cmake\
               \cmake\bin
