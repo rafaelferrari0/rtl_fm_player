@@ -21,7 +21,25 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.6)
+#cmake_minimum_required(VERSION 2.6)
+
+cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
+
+foreach(p
+    CMP0025 # CMake 3.0
+    CMP0028
+    CMP0042 # CMake 3.0
+    CMP0048
+    CMP0054 # CMake 3.1
+    CMP0056 # CMake 3.2
+    CMP0058 # CMake 3.3
+    CMP0063 # CMake 3.3.2
+    )
+  if(POLICY ${p})
+    cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
+
 project(rtlsdr C)
 
 #select the release build type by default to get optimization flags
@@ -66,19 +84,12 @@ find_package(PkgConfig)
 
 find_package(LibUSB)
 
-#SET(CMAKE_LIBUSB_LIBS_INIT "/MinGW/lib/libusb-1.0.a")
-#SET(CMAKE_HAVE_LIBUSB_LIBRARY 1)
-#SET(LIBUSB_FOUND TRUE)
 
 if(WIN32)
 set(THREADS_USE_PTHREADS_WIN32 true)
 endif()
 find_package(Threads)
 
-##SET(CMAKE_THREAD_LIBS_INIT "-lpthread")
-#SET(CMAKE_THREAD_LIBS_INIT "/MinGW/lib/libpthreadGC-3.a")
-#SET(CMAKE_HAVE_THREADS_LIBRARY 1)
-#SET(THREADS_FOUND TRUE)
 
 find_package(SDL2)
 
@@ -112,39 +123,8 @@ include_directories(
 # Set component parameters
 #set(INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "" FORCE)
 
-########################################################################
-# Create uninstall target
-########################################################################
-configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
-@ONLY)
 
-add_custom_target(uninstall
-    ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
-)
 
-########################################################################
-# Install udev rules
-########################################################################
-option(INSTALL_UDEV_RULES "Install udev rules for RTL-SDR" OFF)
-if (INSTALL_UDEV_RULES)
-    install (
-        FILES rtl-sdr.rules
-        DESTINATION "/etc/udev/rules.d"
-        COMPONENT "udev"
-        )
-else (INSTALL_UDEV_RULES)
-    message (STATUS "Udev rules not being installed, install them with -DINSTALL_UDEV_RULES=ON")
-endif (INSTALL_UDEV_RULES)
-
-option(DETACH_KERNEL_DRIVER "Detach kernel driver if loaded" OFF)
-if (DETACH_KERNEL_DRIVER)
-    message (STATUS "Building with kernel driver detaching enabled")
-    add_definitions(-DDETACH_KERNEL_DRIVER=1)
-else (DETACH_KERNEL_DRIVER)
-    message (STATUS "Building with kernel driver detaching disabled, use -DDETACH_KERNEL_DRIVER=ON to enable")
-endif (DETACH_KERNEL_DRIVER)
 
 ########################################################################
 # Add subdirectories
