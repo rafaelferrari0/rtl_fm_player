@@ -1353,7 +1353,7 @@ int main(int argc, char **argv)
   float newfrequency;
   struct tm *timeinfo;
   time_t rawtime;
-  char infostr[16];
+  char infostr[22];
   char fileUniqueStr[35];
   char *filenameExt;
 

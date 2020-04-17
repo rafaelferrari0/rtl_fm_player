@@ -70,7 +70,9 @@ find_package(LibUSB)
 #SET(CMAKE_HAVE_LIBUSB_LIBRARY 1)
 #SET(LIBUSB_FOUND TRUE)
 
+if(WIN32)
 set(THREADS_USE_PTHREADS_WIN32 true)
+endif()
 find_package(Threads)
 
 ##SET(CMAKE_THREAD_LIBS_INIT "-lpthread")
@@ -81,15 +83,15 @@ find_package(Threads)
 find_package(SDL2)
 
 if(NOT LIBUSB_FOUND)
-    message(FATAL_ERROR "LibUSB 1.0 required to compile rtl-sdr")
+    message(FATAL_ERROR "libusb-1.0 required to compile rtl_fm_player")
 endif()
 
 if(NOT Threads_FOUND)
-    message(FATAL_ERROR "pthreads(-win32) required to compile rtl-sdr")
+    message(FATAL_ERROR "pthreads required to compile rtl_fm_player")
 endif()
 
 if(NOT SDL2_FOUND)
-    message(FATAL_ERROR "SDL2 required to compile rtl-sdr")
+    message(FATAL_ERROR "SDL2 required to compile rtl_fm_player")
 endif()
 
 
@@ -99,7 +101,7 @@ endif()
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${LIBUSB_INCLUDE_DIR}
-    ${SDL2_INCLUDE_DIR}
+    ${SDL2_INCLUDE_DIRS}
     ${THREADS_PTHREADS_INCLUDE_DIR}
 )
 
@@ -153,6 +155,7 @@ add_subdirectory(src)
 ########################################################################
 # Create Pkg Config File
 ########################################################################
+
 FOREACH(inc ${LIBUSB_INCLUDE_DIR})
     LIST(APPEND RTLSDR_PC_CFLAGS "-I${inc}")
 ENDFOREACH(inc)
@@ -160,6 +163,15 @@ ENDFOREACH(inc)
 FOREACH(lib ${LIBUSB_LIBRARY_DIRS})
     LIST(APPEND RTLSDR_PC_LIBS "-L${lib}")
 ENDFOREACH(lib)
+
+FOREACH(inc ${SDL2_INCLUDE_DIRS})
+    LIST(APPEND RTLSDR_PC_CFLAGS "-I${inc}")
+ENDFOREACH(inc)
+
+FOREACH(lib ${SDL2_LIBRARIES})
+    LIST(APPEND RTLSDR_PC_LIBS "-L${lib}")
+ENDFOREACH(lib)
+
 
 # use space-separation format for the pc file
 STRING(REPLACE ";" " " RTLSDR_PC_CFLAGS "${RTLSDR_PC_CFLAGS}")

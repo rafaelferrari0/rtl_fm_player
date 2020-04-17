@@ -27,7 +27,7 @@ Usage
 
     Double click rtl_fm_player.exe to run on Windows.
     Type ./rtl_fm_player on Linux console.
-    
+
     Use keyboard to control frequency, timeshift, mute and recording.
 
     You can also open Command Prompt and type parameters manually:
@@ -63,7 +63,19 @@ Latency increase if SDL2 audio queue becomes larger. I clean the buffer when cha
 Building
 -------
 
-`Optional guide to compile RTL FM Player sources using MinGW on Windows.`
+`Compiling on Linux`
+    sudo apt-get install cmake
+    sudo apt-get install libusb-1.0-0-dev
+    sudo apt-get install libsdl2-dev
+
+Extract this project source to any directory
+Enter subdirectory "build"
+Run
+    - 1st-cmake.bat
+    - 2nd-make.bat
+
+
+`Compiling RTL FM Player sources using MinGW on Windows.`
 
 1. Install MinGW on default location (\MinGW) with packages "mingw32-base" and "mingw32-pthreads-w32".
 
@@ -79,6 +91,11 @@ Building
     - extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
     - `(7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe`
 
+Extract this project source to any subdiretory below \MinGW\
+Enter subdirectory "build"
+Run
+    - 1st-cmake.bat
+    - 2nd-make.bat
 
 Credits
 -------

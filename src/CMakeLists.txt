@@ -78,11 +78,6 @@ add_library(convenience_static STATIC
     convenience/convenience.c
 )
 
-# lame lib
-#add_library(libmp3lame_static STATIC
-#    libmp3lame/lame.c
-#)
-
 
 # libgetopt lib
 if(WIN32)
@@ -117,11 +112,12 @@ target_link_libraries(rtl_fm_player rtlsdr_static convenience_static
 )
 
 if(UNIX)
-target_link_libraries(rtl_fm_player m jsonrpc-c)
+# target_link_libraries(rtl_fm_player m jsonrpc-c)
+target_link_libraries(rtl_fm_player m)
 endif()
 
 if(WIN32)
-#target_link_libraries(rtl_fm_player libgetopt_static jsonrpc-c)
+# target_link_libraries(rtl_fm_player libgetopt_static jsonrpc-c)
 target_link_libraries(rtl_fm_player libgetopt_static)
 set_property(TARGET rtl_fm_player APPEND PROPERTY COMPILE_DEFINITIONS "rtlsdr_STATIC" )
 endif()
