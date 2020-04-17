@@ -151,9 +151,12 @@ Building
 
 Credits
 -------
-This project is based on RTL SDR FM Streamer by Albrecht Lohoefener
 
-Simple DirectMedia Layer development library
+- This project is based on RTL SDR FM Streamer by Albrecht Lohoefener
+
+- Libusb. A cross-platform library that gives apps easy access to USB devices
+
+- Simple DirectMedia Layer development library
 
 
 Similar Projects
