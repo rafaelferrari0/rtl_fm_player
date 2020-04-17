@@ -106,7 +106,7 @@ Building
 1. Download latest **MinGW64** toolchain targeting architecture **x86_64**, **win32** threads, **seh** exception
     - https://sourceforge.net/projects/mingw-w64/files/
     - tested: [x86_64-8.1.0-release-win32-seh-rt_v6-rev0.7z](https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-win32/seh/x86_64-8.1.0-release-win32-seh-rt_v6-rev0.7z/download)
-2. Extract the Toolchain 7zip file to root directory, keeping the structure:
+2. Extract the **MinGW64** toolchain 7zip file to root directory, keeping the structure:
     ```
     C:\mingw64\
               \bin
@@ -116,7 +116,7 @@ Building
 3. Download **CMake** Windows win64-x64 ZIP
     - https://cmake.org/download/
     - tested: [cmake-3.17.1-win64-x64.zip](https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-win64-x64.zip)
-4. Extract CMake Zip file inside `C:\MinGW64\CMake` directory, keeping the structure:
+4. Extract **CMake** Zip file inside `C:\MinGW64\CMake` directory, keeping the structure:
     ```
     C:\mingw64\cmake\
               \cmake\bin
@@ -127,8 +127,8 @@ Building
 5. Download **SDL2** Development Libraries for MinGW
     - https://www.libsdl.org/download-2.0.php
     - tested: [SDL2-devel-2.0.12-mingw.tar.gz](https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz)
-6. Extract SDL2 zip file `x86_64-w64-mingw32\lib\libSDL2.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
-7. Extract SDL2 zip directory `x86_64-w64-mingw32\include\SDL2` to `c:\mingw64\x86_64-w64-mingw32\include\SDL2`
+6. Extract **SDL2** zip file `x86_64-w64-mingw32\lib\libSDL2.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
+7. Extract **SDL2** zip directory `x86_64-w64-mingw32\include\SDL2` to `c:\mingw64\x86_64-w64-mingw32\include\SDL2`
     ```
     C:\mingw64\x86_64-w64-mingw32\include\SDL2\
                                               \SDL.h
@@ -136,8 +136,8 @@ Building
 8. Download **libusb-1.0** 7zip file
     - https://sourceforge.net/projects/libusb/files/libusb-1.0/
     - tested: [libusb-1.0.23.7z](https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download)
-9. Extract libusb Zip `MinGW64\dll\libusb-1.0.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
-10. Extract libusb Zip `include\libusb-1.0\libusb.h` to `c:\mingw64\x86_64-w64-mingw32\include\`
+9. Extract **libusb-1.0** Zip `MinGW64\dll\libusb-1.0.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
+10. Extract **libusb-1.0** Zip `include\libusb-1.0\libusb.h` to `c:\mingw64\x86_64-w64-mingw32\include\`
 
 11. Extract this project source to any subdirectory below `c:\mingw64\`
 12. Enter subdirectory `c:\mingw64\[projectsourcedirectory]\build\mingw64`
