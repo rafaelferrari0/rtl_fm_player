@@ -19,6 +19,21 @@ You need to install a new driver to use this dongle.
 
 Installation
 ------------
+
+#### Linux:
+
+Firt time configuration, to disable dvb_usb_rtl28xxu kernel driver:
+```
+cd /etc/modprobe.d/
+sudo gedit ban-rtl.conf
+```
+Type this line in the text file you created:
+`blacklist dvb_usb_rtl28xxu`
+
+Reboot
+
+#### Windows:
+
 - Download Zadig driver https://zadig.akeo.ie/.
 
     1. Plug in the RTL-SDR.
@@ -34,14 +49,17 @@ Installation
 Usage
 -----
 
-    Double click rtl_fm_player.exe to run on Windows.
-    Type ./rtl_fm_player on Linux console.
+On Linux, open a console and type `sudo ./rtl_fm_player`
 
-    Use keyboard to control frequency, timeshift, mute and recording.
+On Windows, just double click `rtl_fm_player.exe`
 
-    You can also open Command Prompt and type parameters manually:
-    C:\>rtl_fm_player.exe -h
-    ./rtl_fm_player -h
+Use keyboard to control frequency, timeshift, mute and recording.
+
+You can also open Command Prompt and type parameters manually:
+```
+C:\>rtl_fm_player.exe -h
+./rtl_fm_player -h
+```
 
 
 Common parameters
