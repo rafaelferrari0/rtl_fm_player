@@ -938,7 +938,6 @@ static void * output_thread_fn(void *arg)
   int circbufferout;
   int shiftmin;
   int shiftmax;
-//  int bufstreaming;
   int SentNum;
   int circbufferfull;
   struct output_state *s = arg;
@@ -1676,18 +1675,20 @@ int main(int argc, char **argv)
   _audio_muted=0;
   recording=0;
 
-      printf("\n+--------------------------------  k e y s ----------------------------------+\n");
+  printf("\n+----------------------------------------------------------------------------+\n");
+  printf("|                               RTL FM Player                                |\n");
+  printf("+--------------------------------  k e y s ----------------------------------+\n");
 
   if (!controldisabled) {
-    printf("| W: +50KHz S: -50KHz  T: Type a frequency                                   |\n");
-    printf("| A: TimeShift [Past]  D: TimeShift [Present]  L: TimeShift [Live]           |\n");
-    printf("| M: Mute/Unmute                                                             |\n");
-    printf("| R: Record/Stop                                                             |\n");
-    printf("| X: Exit                                                                    |\n");
+    printf("| [W]: +50KHz [S]: -50KHz  [T]: Type a frequency                             |\n");
+    printf("| [A]: TimeShift [Past]  [D]: TimeShift [Present]  [L]: TimeShift [Live]     |\n");
+    printf("| [M]: Mute/Unmute                                                           |\n");
+    printf("| [R]: Record/Stop                                                           |\n");
+    printf("| [X]: Exit                                                                  |\n");
     printf("+----------------------------------------------------------------------------+\n\n");
 
   } else {
-    printf("| X: Exit                                                                    |\n");
+    printf("| [X]: Exit                                                                  |\n");
     printf("+----------------------------------------------------------------------------+\n\n");
     
     

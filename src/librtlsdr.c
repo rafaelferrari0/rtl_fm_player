@@ -1954,6 +1954,8 @@ int rtlsdr_read_async(rtlsdr_dev_t *dev, rtlsdr_read_async_cb_t cb, void *ctx,
 
 	dev->async_status = next_status;
 
+  if (dev->dev_lost) return -1;
+
 	return r;
 }
 
