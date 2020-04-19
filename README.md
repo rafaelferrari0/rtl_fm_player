@@ -2,7 +2,7 @@ RTL SDR FM Player
 ===================
 Turns your Realtek RTL2832 based dongle into a SDR stereo FM radio receiver.
 TimeShift function can go back some minutes in time to listen it again.
-Recording function to save Wav files.
+Recording function to save WAV files.
 
 
 Description
@@ -28,7 +28,7 @@ Installation
     5. Make sure that WinUSB is selected as the target driver and click on Replace Driver.
 
 - Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases)
-- Optional. Compile it on Linux, or Windows using MinGW32.
+- Optional. Compile it on Linux, or Windows using MinGW.
 
 
 Usage
@@ -74,7 +74,7 @@ Building
 
 
 ### Compiling RTL FM Player sources on Linux:
-`Tested on Debian Stretch`
+`Tested on Debian 10 "buster"`
 
 
 1. sudo `apt-get install cmake`
