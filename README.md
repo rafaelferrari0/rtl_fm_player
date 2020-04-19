@@ -102,8 +102,8 @@ Building
               \etc
               ...
     ```
-3. Download **CMake** Windows win64-x64 ZIP
-    - https://cmake.org/download/
+3. Download **CMake** Windows win64-x64 Zip file
+    - https://cmake.org/download/ (not the installer)
     - tested: [cmake-3.17.1-win64-x64.zip](https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-win64-x64.zip)
 4. Extract **CMake** Zip file inside `C:\MinGW64\CMake` directory, keeping the structure:
     ```
