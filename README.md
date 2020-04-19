@@ -73,7 +73,7 @@ Building
 -------
 
 
-#### Compiling RTL FM Player sources on Linux:
+### Compiling RTL FM Player sources on Linux:
 `Tested on Debian Stretch`
 
 
@@ -81,34 +81,14 @@ Building
 2. sudo `apt-get install libusb-1.0-0-dev`
 3. sudo `apt-get install libsdl2-dev`
 4. Extract this project source to any directory
-5. Enter subdirectory "build"
+5. Enter subdirectory `[projectsourcedirectory]\build\linux`
 6. Run:
     - `./1st-cmake.sh`
     - `./2nd-make.sh`
 
 
-#### Compiling RTL FM Player sources using MinGW on Windows:
-`Using old MinGW installer for Win32`
 
-1. Download **mingw-get-setup** https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/
-    - Install MinGW on `\MinGW` (C:, D: ...) with packages `mingw32-base-bin` and `mingw32-pthreads-w32`
-2. Install **CMake** on `\MinGW\CMake`
-3. Download http://libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
-    - extract `(tar.gz file)\i686-w64-mingw32\lib\libSDL2.dll.a` to `\MinGW\lib`
-    - extract the folder `(tar.gz file)\i686-w64-mingw32\include\SDL2` to `\MinGW\include\SDL2`
-    - `(tar.gz file)\i686-w64-mingw32\bin\SDL2.dll will be requered when runing rtl_fm_streamer.exe`
-4. Download https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download 
-    - extract (7zip file)\MinGW32\dll\libusb-1.0.dll.a to \MinGW\lib 
-    - extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
-    - `(7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe`
-5. Extract this project source to any subdirectory below \MinGW\
-6. Enter subdirectory "build"
-7. Run:
-    - `1st-cmake.bat`
-    - `2nd-make.bat`
-
-
-#### Compiling RTL FM Player sources using MinGW64 on Windows:
+### Compiling RTL FM Player sources using MinGW64 on Windows: (target 64 bit)
 `MinGW64 manual installation. You can install to any directory name without spaces in root drive, (eg: C:\MinGW64-RTL, D:\MinGWTemp). In this example we install to C:\MinGW64`
 
 
@@ -157,6 +137,26 @@ Building
     - Copy **SDL2** zip file `\x86_64-w64-mingw32\bin\SDL2.dll` to `src`
     - Copy **libusb-1.0** 7zip file `\MinGW64\dll\libusb-1.0.dll` to `src`
     
+
+### Compiling RTL FM Player sources using OLD MinGW on Windows:
+`Using old MinGW installer for Win32`
+
+1. Download **mingw-get-setup** https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/
+    - Install MinGW on `\MinGW` (C:, D: ...) with packages `mingw32-base-bin` and `mingw32-pthreads-w32`
+2. Install **CMake** on `\MinGW\CMake`
+3. Download http://libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
+    - extract `(tar.gz file)\i686-w64-mingw32\lib\libSDL2.dll.a` to `\MinGW\lib`
+    - extract the folder `(tar.gz file)\i686-w64-mingw32\include\SDL2` to `\MinGW\include\SDL2`
+    - `(tar.gz file)\i686-w64-mingw32\bin\SDL2.dll will be requered when runing rtl_fm_streamer.exe`
+4. Download https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download 
+    - extract (7zip file)\MinGW32\dll\libusb-1.0.dll.a to \MinGW\lib 
+    - extract (7zip file)\include\libusb-1.0\libusb.h to \MinGW\include
+    - `(7zip file)\MinGW32\dll\libusb-1.0.dll will be requered when runing rtl_fm_streamer.exe`
+5. Extract this project source to any subdirectory below \MinGW\
+6. Enter subdirectory `[projectsourcedirectory]\build\mingw`
+7. Run:
+    - `1st-cmake.bat`
+    - `2nd-make.bat`
 
 Credits
 -------
