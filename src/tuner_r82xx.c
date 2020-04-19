@@ -271,8 +271,8 @@ static int r82xx_write(struct r82xx_priv *priv, uint8_t reg, const uint8_t *val,
 					 priv->buf, size + 1);
 
 		if (rc != size + 1) {
-			fprintf(stderr, "%s: i2c wr failed=%d reg=%02x len=%d\n",
-				   __FUNCTION__, rc, reg, size);
+//			fprintf(stderr, "%s: i2c wr failed=%d reg=%02x len=%d\n",
+//				   __FUNCTION__, rc, reg, size);
 			if (rc < 0)
 				return rc;
 			return -1;
@@ -342,8 +342,8 @@ static int r82xx_read(struct r82xx_priv *priv, uint8_t reg, uint8_t *val, int le
 	rc = rtlsdr_i2c_read_fn(priv->rtl_dev, priv->cfg->i2c_addr, p, len);
 
 	if (rc != len) {
-		fprintf(stderr, "%s: i2c rd failed=%d reg=%02x len=%d\n",
-			   __FUNCTION__, rc, reg, len);
+//		fprintf(stderr, "%s: i2c rd failed=%d reg=%02x len=%d\n",
+//			   __FUNCTION__, rc, reg, len);
 		if (rc < 0)
 			return rc;
 		return -1;
@@ -1122,8 +1122,8 @@ int r82xx_set_freq(struct r82xx_priv *priv, uint32_t freq)
 	}
 
 err:
-	if (rc < 0)
-		fprintf(stderr, "%s: failed=%d\n", __FUNCTION__, rc);
+//	if (rc < 0)
+//		fprintf(stderr, "%s: failed=%d\n", __FUNCTION__, rc);
 	return rc;
 }
 
