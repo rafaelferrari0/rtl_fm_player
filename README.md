@@ -1,6 +1,6 @@
 RTL SDR FM Player
 ===================
-Turns your Realtek RTL2832 based dongle into a SDR stereo FM radio receiver.
+SDR Stereo FM radio receiver for RTL dongles, with TimeShift and Recording.
 TimeShift function can go back some minutes in time to listen it again.
 Recording function to save WAV files.
 
