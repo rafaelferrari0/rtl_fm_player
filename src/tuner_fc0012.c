@@ -114,7 +114,7 @@ int fc0012_init(void *dev)
 		0x00,	/* reg. 0x10: may also be 0x0d */
 		0x00,	/* reg. 0x11 */
 		0x1f,	/* reg. 0x12: Set to maximum gain */
-		0x08,	/* reg. 0x13: Set to Middle Gain: 0x08,
+		0x00,	/* reg. 0x13: Set to Low Gain: 0x00,
 			   Low Gain: 0x00, High Gain: 0x10, enable IX2: 0x80 */
 		0x00,	/* reg. 0x14 */
 		0x04,	/* reg. 0x15: Enable LNA COMPS */
@@ -321,23 +321,11 @@ int fc0012_set_gain(void *dev, int gain)
 	/* mask bits off */
 	tmp &= 0xe0;
 
-	switch (gain) {
-	case -99:		/* -9.9 dB */
-		tmp |= 0x02;
-		break;
-	case -40:		/* -4 dB */
-		break;
-	case 71:
-		tmp |= 0x08;	/* 7.1 dB */
-		break;
-	case 179:
-		tmp |= 0x17;	/* 17.9 dB */
-		break;
-	case 192:
-	default:
-		tmp |= 0x10;	/* 19.2 dB */
-		break;
-	}
+	if (gain < -40) tmp |= 0x02;      /* -9.9 dB */
+	else if (gain < 71) tmp |= 0x00;  /* -4.0 dB */
+	else if (gain < 179) tmp |= 0x08; /*  7.1 dB */
+	else if (gain < 192) tmp |= 0x17; /* 17.9 dB */
+	else tmp |= 0x10;	              /* 19.2 dB */
 
 	ret = fc0012_writereg(dev, 0x13, tmp);
 

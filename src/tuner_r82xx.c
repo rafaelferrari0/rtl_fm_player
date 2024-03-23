@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "rtlsdr_i2c.h"
 #include "tuner_r82xx.h"
@@ -32,6 +33,10 @@
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define MHZ(x)		((x)*1000*1000)
 #define KHZ(x)		((x)*1000)
+
+#define HF 1
+#define VHF 2
+#define UHF 3
 
 /*
  * Static constants
@@ -239,6 +244,7 @@ static void shadow_store(struct r82xx_priv *priv, uint8_t reg, const uint8_t *va
 
 	if (r < 0) {
 		len += r;
+		val -= r;
 		r = 0;
 	}
 	if (len <= 0)
@@ -249,10 +255,28 @@ static void shadow_store(struct r82xx_priv *priv, uint8_t reg, const uint8_t *va
 	memcpy(&priv->regs[r], val, len);
 }
 
+static bool shadow_equal(struct r82xx_priv *priv, uint8_t reg, const uint8_t *val,
+			 int len)
+{
+	int r = reg - REG_SHADOW_START;
+
+	if (r < 0 || len < 0 || len > NUM_REGS - r)
+		return false;
+
+	if (memcmp(&priv->regs[r], val, len) == 0)
+		return true;
+
+	return false;
+}
+
 static int r82xx_write(struct r82xx_priv *priv, uint8_t reg, const uint8_t *val,
 		       unsigned int len)
 {
 	int rc, size, pos = 0;
+
+	/* Avoid setting registers unnecessarily since it's slow */
+	if (shadow_equal(priv, reg, val, len))
+		return 0;
 
 	/* Store the shadow registers */
 	shadow_store(priv, reg, val, len);
@@ -271,8 +295,8 @@ static int r82xx_write(struct r82xx_priv *priv, uint8_t reg, const uint8_t *val,
 					 priv->buf, size + 1);
 
 		if (rc != size + 1) {
-//			fprintf(stderr, "%s: i2c wr failed=%d reg=%02x len=%d\n",
-//				   __FUNCTION__, rc, reg, size);
+			fprintf(stderr, "%s: i2c wr failed=%d reg=%02x len=%d\n",
+				   __FUNCTION__, rc, reg, size);
 			if (rc < 0)
 				return rc;
 			return -1;
@@ -342,8 +366,8 @@ static int r82xx_read(struct r82xx_priv *priv, uint8_t reg, uint8_t *val, int le
 	rc = rtlsdr_i2c_read_fn(priv->rtl_dev, priv->cfg->i2c_addr, p, len);
 
 	if (rc != len) {
-//		fprintf(stderr, "%s: i2c rd failed=%d reg=%02x len=%d\n",
-//			   __FUNCTION__, rc, reg, len);
+		fprintf(stderr, "%s: i2c rd failed=%d reg=%02x len=%d\n",
+			   __FUNCTION__, rc, reg, len);
 		if (rc < 0)
 			return rc;
 		return -1;
@@ -420,17 +444,21 @@ static int r82xx_set_mux(struct r82xx_priv *priv, uint32_t freq)
 	return rc;
 }
 
+static inline uint8_t mask_reg8(uint8_t reg, uint8_t val, uint8_t mask)
+{
+	return (reg & ~mask) | (val & mask);
+}
+
 static int r82xx_set_pll(struct r82xx_priv *priv, uint32_t freq)
 {
 	int rc, i;
 	unsigned sleep_time = 10000;
 	uint64_t vco_freq;
-	uint32_t vco_fra;	/* VCO contribution by SDM (kHz) */
-	uint32_t vco_min = 1770000;
-	uint32_t vco_max = vco_min * 2;
-	uint32_t freq_khz, pll_ref, pll_ref_khz;
-	uint16_t n_sdm = 2;
-	uint16_t sdm = 0;
+	uint64_t vco_div;
+	uint32_t vco_min = 1770000; /* kHz */
+	uint32_t vco_max = vco_min * 2; /* kHz */
+	uint32_t freq_khz, pll_ref;
+	uint32_t sdm = 0;
 	uint8_t mix_div = 2;
 	uint8_t div_buf = 0;
 	uint8_t div_num = 0;
@@ -438,25 +466,24 @@ static int r82xx_set_pll(struct r82xx_priv *priv, uint32_t freq)
 	uint8_t refdiv2 = 0;
 	uint8_t ni, si, nint, vco_fine_tune, val;
 	uint8_t data[5];
+	uint8_t regs[7];
 
 	/* Frequency in kHz */
 	freq_khz = (freq + 500) / 1000;
 	pll_ref = priv->cfg->xtal;
-	pll_ref_khz = (priv->cfg->xtal + 500) / 1000;
-
-	rc = r82xx_write_reg_mask(priv, 0x10, refdiv2, 0x10);
-	if (rc < 0)
-		return rc;
 
 	/* set pll autotune = 128kHz */
 	rc = r82xx_write_reg_mask(priv, 0x1a, 0x00, 0x0c);
 	if (rc < 0)
 		return rc;
 
+	/* regs 0x10 to 0x16 */
+	memcpy(regs, &priv->regs[0x10 - REG_SHADOW_START], 7);
+
+	regs[0] = mask_reg8(regs[0], refdiv2, 0x10);
+
 	/* set VCO current = 100 */
-	rc = r82xx_write_reg_mask(priv, 0x12, 0x80, 0xe0);
-	if (rc < 0)
-		return rc;
+	regs[2] = mask_reg8(regs[2], 0x80, 0xe0);
 
 	/* Calculate divider */
 	while (mix_div <= 64) {
@@ -486,13 +513,27 @@ static int r82xx_set_pll(struct r82xx_priv *priv, uint32_t freq)
 	else if (vco_fine_tune < vco_power_ref)
 		div_num = div_num + 1;
 
-	rc = r82xx_write_reg_mask(priv, 0x10, div_num << 5, 0xe0);
-	if (rc < 0)
-		return rc;
+	regs[0] = mask_reg8(regs[0], div_num << 5, 0xe0);
 
 	vco_freq = (uint64_t)freq * (uint64_t)mix_div;
-	nint = vco_freq / (2 * pll_ref);
-	vco_fra = (vco_freq - 2 * pll_ref * nint) / 1000;
+
+	/* We want to approximate:
+	 *  vco_freq / (2 * pll_ref)
+	 *
+	 * in the form:
+	 *  nint + sdm/65536
+	 *
+	 * where nint,sdm are integers and 0 < nint, 0 <= sdm < 65536
+	 *
+	 * Scaling to fixed point and rounding:
+	 *
+	 *  vco_div = 65536*(nint + sdm/65536) = int( 0.5 + 65536 * vco_freq / (2 * pll_ref) )
+	 *  vco_div = 65536*nint + sdm         = int( (pll_ref + 65536 * vco_freq) / (2 * pll_ref) )
+	 */
+
+	vco_div = (pll_ref + 65536 * vco_freq) / (2 * pll_ref);
+	nint = (uint32_t) (vco_div / 65536);
+	sdm = (uint32_t) (vco_div % 65536);
 
 	if (nint > ((128 / vco_power_ref) - 1)) {
 		fprintf(stderr, "[R82XX] No valid PLL values for %u Hz!\n", freq);
@@ -502,35 +543,20 @@ static int r82xx_set_pll(struct r82xx_priv *priv, uint32_t freq)
 	ni = (nint - 13) / 4;
 	si = nint - 4 * ni - 13;
 
-	rc = r82xx_write_reg(priv, 0x14, ni + (si << 6));
-	if (rc < 0)
-		return rc;
+	regs[4] = ni + (si << 6);
 
 	/* pw_sdm */
-	if (!vco_fra)
+	if (sdm == 0)
 		val = 0x08;
 	else
 		val = 0x00;
 
-	rc = r82xx_write_reg_mask(priv, 0x12, val, 0x08);
-	if (rc < 0)
-		return rc;
+	regs[2] = mask_reg8(regs[2], val, 0x08);
 
-	/* sdm calculator */
-	while (vco_fra > 1) {
-		if (vco_fra > (2 * pll_ref_khz / n_sdm)) {
-			sdm = sdm + 32768 / (n_sdm / 2);
-			vco_fra = vco_fra - 2 * pll_ref_khz / n_sdm;
-			if (n_sdm >= 0x8000)
-				break;
-		}
-		n_sdm <<= 1;
-	}
+	regs[5] = sdm & 0xff;
+	regs[6] = sdm >> 8;
 
-	rc = r82xx_write_reg(priv, 0x16, sdm >> 8);
-	if (rc < 0)
-		return rc;
-	rc = r82xx_write_reg(priv, 0x15, sdm & 0xff);
+	rc = r82xx_write(priv, 0x10, regs, 7);
 	if (rc < 0)
 		return rc;
 
@@ -1098,8 +1124,23 @@ int r82xx_set_bandwidth(struct r82xx_priv *priv, int bw, uint32_t rate)
 int r82xx_set_freq(struct r82xx_priv *priv, uint32_t freq)
 {
 	int rc = -1;
-	uint32_t lo_freq = freq + priv->int_freq;
+	int is_rtlsdr_blog_v4;
+	uint32_t upconvert_freq;
+	uint32_t lo_freq;
 	uint8_t air_cable1_in;
+	uint8_t open_d;
+	uint8_t band;
+	uint8_t cable_2_in;
+	uint8_t cable_1_in;
+	uint8_t air_in;
+
+	is_rtlsdr_blog_v4 = rtlsdr_check_dongle_model(priv->rtl_dev, "RTLSDRBlog", "Blog V4");
+
+	/* if it's an RTL-SDR Blog V4, automatically upconvert by 28.8 MHz if we tune to HF
+	 * so that we don't need to manually set any upconvert offset in the SDR software */
+	upconvert_freq = is_rtlsdr_blog_v4 ? ((freq < MHZ(28.8)) ? (freq + MHZ(28.8)) : freq) : freq;
+
+	lo_freq = upconvert_freq + priv->int_freq;
 
 	rc = r82xx_set_mux(priv, lo_freq);
 	if (rc < 0)
@@ -1109,21 +1150,71 @@ int r82xx_set_freq(struct r82xx_priv *priv, uint32_t freq)
 	if (rc < 0 || !priv->has_lock)
 		goto err;
 
-	/* switch between 'Cable1' and 'Air-In' inputs on sticks with
-	 * R828D tuner. We switch at 345 MHz, because that's where the
-	 * noise-floor has about the same level with identical LNA
-	 * settings. The original driver used 320 MHz. */
-	air_cable1_in = (freq > MHZ(345)) ? 0x00 : 0x60;
+	if (is_rtlsdr_blog_v4) {
+		/* determine if notch filters should be on or off notches are turned OFF
+		 * when tuned within the notch band and ON when tuned outside the notch band.
+		 */
+		open_d = (freq <= MHZ(2.2) || (freq >= MHZ(85) && freq <= MHZ(112)) || (freq >= MHZ(172) && freq <= MHZ(242))) ? 0x00 : 0x08;
+		rc = r82xx_write_reg_mask(priv, 0x17, open_d, 0x08);
 
-	if ((priv->cfg->rafael_chip == CHIP_R828D) &&
-	    (air_cable1_in != priv->input)) {
-		priv->input = air_cable1_in;
-		rc = r82xx_write_reg_mask(priv, 0x05, air_cable1_in, 0x60);
+		if (rc < 0)
+			return rc;
+
+		/* select tuner band based on frequency and only switch if there is a band change
+		 *(to avoid excessive register writes when tuning rapidly)
+		 */
+		band = (freq <= MHZ(28.8)) ? HF : ((freq > MHZ(28.8) && freq < MHZ(250)) ? VHF : UHF);
+
+		/* switch between tuner inputs on the RTL-SDR Blog V4 */
+		if (band != priv->input) {
+			priv->input = band;
+
+			/* activate cable 2 (HF input) */
+			cable_2_in = (band == HF) ? 0x08 : 0x00;
+			rc = r82xx_write_reg_mask(priv, 0x06, cable_2_in, 0x08);
+
+			if (rc < 0)
+				goto err;
+
+			/* Control upconverter GPIO switch on newer batches */
+			rc = rtlsdr_set_bias_tee_gpio(priv->rtl_dev, 5, !cable_2_in);
+
+			if (rc < 0)
+				goto err;
+
+			/* activate cable 1 (VHF input) */
+			cable_1_in = (band == VHF) ? 0x40 : 0x00;
+			rc = r82xx_write_reg_mask(priv, 0x05, cable_1_in, 0x40);
+
+			if (rc < 0)
+				goto err;
+
+			/* activate air_in (UHF input) */
+			air_in = (band == UHF) ? 0x00 : 0x20;
+			rc = r82xx_write_reg_mask(priv, 0x05, air_in, 0x20);
+
+			if (rc < 0)
+				goto err;
+		}
+	}
+	else /* Standard R828D dongle*/
+	{
+		/* switch between 'Cable1' and 'Air-In' inputs on sticks with
+		* R828D tuner. We switch at 345 MHz, because that's where the
+		* noise-floor has about the same level with identical LNA
+		* settings. The original driver used 320 MHz. */
+		air_cable1_in = (freq > MHZ(345)) ? 0x00 : 0x60;
+
+		if ((priv->cfg->rafael_chip == CHIP_R828D) &&
+			(air_cable1_in != priv->input)) {
+			priv->input = air_cable1_in;
+			rc = r82xx_write_reg_mask(priv, 0x05, air_cable1_in, 0x60);
+		}
 	}
 
 err:
-//	if (rc < 0)
-//		fprintf(stderr, "%s: failed=%d\n", __FUNCTION__, rc);
+	if (rc < 0)
+		fprintf(stderr, "%s: failed=%d\n", __FUNCTION__, rc);
 	return rc;
 }
 
@@ -1248,6 +1339,7 @@ int r82xx_init(struct r82xx_priv *priv)
 	priv->xtal_cap_sel = XTAL_HIGH_CAP_0P;
 
 	/* Initialize registers */
+	memset(priv->regs, 0, NUM_REGS);
 	rc = r82xx_write(priv, 0x05,
 			 r82xx_init_array, sizeof(r82xx_init_array));
 

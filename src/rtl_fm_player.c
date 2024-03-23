@@ -9,7 +9,7 @@
  * Copyright (C) 2013 by Elias Oenal <EliasOenal@gmail.com>
  * Copyright (C) 2015 by Miroslav Slugen <thunder.m@email.cz>
  * Copyright (C) 2015 by Albrecht Lohoefener <albrechtloh@gmx.de>
- * Copyright (C) 2020 by Rafael Ferrari <rafaelbf@hotmail.com>
+ * Copyright (C) 2024 by Rafael Ferrari <rafaelbf@hotmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@
 #include "convenience/convenience.h"
 #include "rtl-sdr.h"
 
-#define VERSION "0.0.1"
+#define VERSION "0.0.2"
 
 
 
@@ -1375,7 +1375,7 @@ int main(int argc, char **argv)
   nice(-5);
 #endif
 
-  printf("RTL FM Player Version %s (c) RafaelBF 2020.\n", VERSION);
+  printf("RTL FM Player Version %s (c) RafaelBF 2024.\n", VERSION);
 
   if (SDL_Init(SDL_INIT_AUDIO) < 0) {
     fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
