@@ -111,7 +111,7 @@ Building
 
 1. Download latest **mingw-w64** toolchain targeting architecture **i686**, **win32** threads, **dwarf** exception
     - https://sourceforge.net/projects/mingw-w64/files/
-    - tested: [i686-8.1.0-release-win32-dwarf-rt_v6-rev0.7z](https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/8.1.0/threads-win32/dwarf/i686-8.1.0-release-win32-dwarf-rt_v6-rev0.7z/downloadd)
+    - tested: [i686-8.1.0-release-win32-dwarf-rt_v6-rev0.7z](https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/8.1.0/threads-win32/dwarf/i686-8.1.0-release-win32-dwarf-rt_v6-rev0.7z/download)
 2. Extract the **mingw-w64** toolchain 7zip file to root directory, keeping the structure:
     ```
     C:\mingw32\
@@ -122,7 +122,7 @@ Building
 3. Download **CMake** Windows win32-x86 Zip file (not the installer)
     - https://cmake.org/download/ 
     - tested: [cmake-3.17.1-win32-x86.zip](https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-win32-x86.zip)
-4. Extract **CMake** Zip file inside `C:\MinGW32\CMake` directory, keeping the structure:
+4. Extract **CMake** zip file inside `C:\MinGW32\CMake` directory, keeping the structure:
     ```
     C:\mingw32\cmake\
               \cmake\bin
@@ -133,8 +133,8 @@ Building
 5. Download **SDL2** Development Libraries for MinGW
     - https://www.libsdl.org/download-2.0.php
     - tested: [SDL2-devel-2.0.12-mingw.tar.gz](https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz)
-6. Extract **SDL2** zip file `i686-w64-mingw32\lib\libSDL2.dll.a` to `c:\mingw64\i686-w64-mingw32\lib\`
-7. Extract **SDL2** zip directory `i686-w64-mingw32\include\SDL2` to `c:\mingw64\i686-w64-mingw32\include\SDL2`
+6. Extract in **SDL2** tar.gz, the file `i686-w64-mingw32\lib\libSDL2.dll.a` to `c:\mingw32\i686-w64-mingw32\lib\`
+7. Extract in **SDL2** tar.gz, the folder `i686-w64-mingw32\include\SDL2` to `c:\mingw32\i686-w64-mingw32\include\SDL2`
     ```
     check the directory structure:
     C:\mingw32\i686-w64-mingw32\include\SDL2\
@@ -143,8 +143,8 @@ Building
 8. Download **libusb-1.0** 7zip file
     - https://sourceforge.net/projects/libusb/files/libusb-1.0/
     - tested: [libusb-1.0.23.7z](https://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.23/libusb-1.0.23.7z/download)
-9. Extract **libusb-1.0** Zip `\MinGW32\dll\libusb-1.0.dll.a` to `c:\mingw32\i686-w64-mingw32\lib\`
-10. Extract **libusb-1.0** Zip `\include\libusb-1.0\libusb.h` to `c:\mingw32\i686-w64-mingw32\include\`
+9. Extract in **libusb-1.0** 7zip, the file `\MinGW32\dll\libusb-1.0.dll.a` to `c:\mingw32\i686-w64-mingw32\lib\`
+10. Extract in **libusb-1.0** 7zip, the file `\include\libusb-1.0\libusb.h` to `c:\mingw32\i686-w64-mingw32\include\`
 11. Extract this project source to any subdirectory below `c:\mingw32\`
 12. Enter subdirectory `c:\mingw32\[projectsourcedirectory]\build\mingw32`
 13. Run:
