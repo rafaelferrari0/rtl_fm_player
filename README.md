@@ -106,7 +106,7 @@ Building
 
 
 
-### Compiling RTL FM Player sources using MinGW32 on Windows: (target 32 bit)
+### Compiling RTL FM Player sources using MinGW32 on Windows: **(target 32 bit)**
 `MinGW32 manual installation. You can install to any directory name without spaces in root drive, (eg: C:\MinGW32-RTL, D:\MinGWTemp). In this example we install to C:\MinGW32`
 
 1. Download latest **mingw-w64** toolchain targeting architecture **i686**, **win32** threads, **dwarf** exception
@@ -155,7 +155,7 @@ Building
     - Copy **libusb-1.0** 7zip file `\MinGW32\dll\libusb-1.0.dll` to `src`
 
 
-### Compiling RTL FM Player sources using MinGW64 on Windows: (target 64 bit)
+### Compiling RTL FM Player sources using MinGW64 on Windows: **(target 64 bit)**
 `MinGW64 manual installation. You can install to any directory name without spaces in root drive, (eg: C:\MinGW64-RTL, D:\MinGWTemp). In this example we install to C:\MinGW64`
 
 1. Download latest **mingw-w64** toolchain targeting architecture **x86_64**, **win32** threads, **seh** exception
@@ -182,8 +182,8 @@ Building
 5. Download **SDL2** Development Libraries for MinGW
     - https://www.libsdl.org/download-2.0.php
     - tested: [SDL2-devel-2.0.12-mingw.tar.gz](https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz)
-6. Extract **SDL2** zip file `x86_64-w64-mingw32\lib\libSDL2.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
-7. Extract **SDL2** zip directory `x86_64-w64-mingw32\include\SDL2` to `c:\mingw64\x86_64-w64-mingw32\include\SDL2`
+6. Extract **SDL2** zip file `x86_64-**w64**-mingw32\lib\libSDL2.dll.a` to `c:\mingw64\x86_64-w64-mingw32\lib\`
+7. Extract **SDL2** zip directory `x86_64-**w64**-mingw32\include\SDL2` to `c:\mingw64\x86_64-w64-mingw32\include\SDL2`
     ```
     check the directory structure:
     C:\mingw64\x86_64-w64-mingw32\include\SDL2\
