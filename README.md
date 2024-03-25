@@ -22,7 +22,7 @@ Installation
 
 ### Linux:
 
-Firt time configuration, open a new terminal as root **(sudo -s or su):**
+Firt time configuration, open a new terminal as root (`sudo -s` or `su`):
 
 - Disable dvb_usb_rtl28xxu kernel driver:
 ```
@@ -39,6 +39,12 @@ Save and exit.
 cd /etc/udev/rules.d/
 wget -O 10-rtl-sdr.rules https://raw.githubusercontent.com/rafaelferrari0/rtl_fm_player/master/rtl-sdr.rules
 ```
+
+- Install required libraries
+```
+apt-get install libusb-1.0 libsdl2-2.0
+```
+
 - Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases) (Linux versions)
 
 Reboot.
