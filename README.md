@@ -1,16 +1,21 @@
 RTL SDR FM Player
 ===================
-SDR Stereo FM radio receiver for RTL dongles, with TimeShift and Recording.
-TimeShift function can go back some minutes in time to listen it again.
-Recording function to save WAV files.
+
+RTL_FM_PLAYER allows FM Stereo listening with TimeShift and Recording functions,
+using RTL DVB-T compatible USB dongles on Linux and Windows.
+TimeShift function can go back some minutes in time to listen your song again. :musical_note:
+Use recording function save Stereo WAV files.
 
 
 Description
 -----------
-**RTL FM Player** is a small tool to listen FM stereo radio by using a compatible DVB-T dongle.
+**RTL FM Player** is a small tool to listen FM stereo radio by using a compatible RTL DVB-T dongle.
 Is a console application that runs on Linux and Windows, all commands like changing stations and timeshifting is controlled by keyboard keys.
-Outputs stereo audio to sondcard using SDL library.
-Can record audio .wav file format.
+Outputs stereo audio to soundcard using SDL library.
+Record stereo .wav file format.
+
+Runs on ANY Linux version (if compiled from source). :thumbsup:
+Runs on ANY Windows version (from XP to 11). :thumbsup:
 
 The DVB-T dongle has to be based on the Realtek RTL2832U.
 See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
@@ -52,15 +57,25 @@ Reboot.
 
 ### Windows:
 
-- Download Zadig driver https://zadig.akeo.ie/.
-
-    1. Plug in the RTL-SDR.
-    2. Run Zadig as administrator by right clicking it and choosing run as administrator.
-    3. Go to Options -> List all devices and make sure it is checked.
-    4. In the drop down box choose Bulk-In, Interface (Interface 0). This may also sometimes show up as something prefixed with “RTL28328U”. That choice is also valid.
-    5. Make sure that WinUSB is selected as the target driver and click on Replace Driver.
+    1. Download Zadig driver https://zadig.akeo.ie/
+    2. Plug in the RTL-SDR USB.
+    3. Run Zadig as administrator by right clicking it and choosing run as administrator.
+    4. Go to Options -> List all devices and make sure it is checked.
+    5. In the drop down box choose Bulk-In, Interface (Interface 0). This may also sometimes show up as something prefixed with “RTL28328U”. That choice is also valid.
+    6. Make sure that WinUSB is selected as the target driver and click on Replace Driver.
 
 - Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases) (Win32 or Win64 versions)
+
+#### Windows XP:
+
+    1. Download version **zadig_xp-2.2.exe** from https://zadig.akeo.ie/downloads/
+    2. Plug in the RTL-SDR USB. Windows XP does not have drivers for it, just proceed "New Hardware Wizard" window to the end.
+    3. Run Zadig.
+    4. Go to Options -> List all devices and make sure it is checked.
+    5. In the drop down box choose Bulk-In, Interface (Interface 0). This may also sometimes show up as something prefixed with “RTL28328U”. That choice is also valid.
+    6. Make sure that WinUSB is selected as the target driver and click on Replace Driver.
+
+- Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases) (Win32 versions)
 
 
 Usage
@@ -98,12 +113,14 @@ Common parameters
 
 Performance
 --------------
-On modern PCs (x86, x64) mono and stereo decoding should be possible easily.
+On "modern" PCs (x86, x64) mono and stereo decoding should be possible easily.
+"Modern" is any processor from 2002 Year and UP. :satisfied:
 
 
 Limitations
 --------------
-Latency increase as SDL2 audio queue becomes larger. Buffer cleaned when changing stations or Timeshifting.
+Latency increase as SDL2 audio queue becomes larger. 
+Buffer cleared when changing stations or Timeshifting.
 
 
 Building
