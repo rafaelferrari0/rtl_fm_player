@@ -22,7 +22,7 @@ Installation
 
 ### Linux:
 
-Firt time configuration, open a new terminal as root (`sudo -s` or `su`):
+First time configuration, open a new terminal as root (`sudo -s` or `su`):
 
 - Disable dvb_usb_rtl28xxu kernel driver:
 ```
@@ -103,7 +103,7 @@ On modern PCs (x86, x64) mono and stereo decoding should be possible easily.
 
 Limitations
 --------------
-Latency increase if SDL2 audio queue becomes larger. I clean the buffer when changing stations or Timeshifting.
+Latency increase as SDL2 audio queue becomes larger. Buffer cleaned when changing stations or Timeshifting.
 
 
 Building
@@ -111,7 +111,9 @@ Building
 
 
 ### Compiling RTL FM Player sources on Linux:
-`Tested on Debian 10 "buster"`
+
+> [!NOTE]
+> Tested on Debian 10 "buster" and Debian 12 "bookworm"
 
 
 1. sudo `apt-get install cmake`
@@ -173,7 +175,7 @@ Building
 13. Run:
     - `1st-cmake.bat`
     - `2nd-make.bat`
-14. If sucessfull, compiled `rtl_fm_player.exe` will be on `[projectsourcedirectory]\build\mingw64\src` subdirectory.
+14. If successfull, compiled `rtl_fm_player.exe` will be on `[projectsourcedirectory]\build\mingw64\src` subdirectory.
     - Copy **SDL2** zip file `\x86_64-w64-mingw32\bin\SDL2.dll` to `src`
     - Copy **libusb-1.0** 7zip file `\MinGW64\dll\libusb-1.0.dll` to `src`
 
@@ -227,7 +229,7 @@ Building
 13. Run:
     - `1st-cmake.bat`
     - `2nd-make.bat`
-14. If sucessfull, compiled `rtl_fm_player.exe` will be on `[projectsourcedirectory]\build\mingw32\src` directory.
+14. If successfull, compiled `rtl_fm_player.exe` will be on `[projectsourcedirectory]\build\mingw32\src` directory.
     - Copy **SDL2** zip file `\i686-w64-mingw32\bin\SDL2.dll` to `src`
     - Copy **libusb-1.0** 7zip file `\MinGW32\dll\libusb-1.0.dll` to `src`
 
