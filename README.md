@@ -257,7 +257,9 @@ Building
 Credits
 -------
 
-- This project is based on RTL SDR FM Streamer by Albrecht Lohoefener
+- This project is based on **RTL SDR FM Streamer** by Albrecht Lohoefener
+
+- RTL-SDR-BLOG library files from https://github.com/rtlsdrblog/rtl-sdr-blog
 
 - Libusb. A cross-platform library that gives apps easy access to USB devices
 
