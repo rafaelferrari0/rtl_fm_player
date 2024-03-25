@@ -20,19 +20,31 @@ You need to install a new driver to use this dongle.
 Installation
 ------------
 
-#### Linux:
+### Linux:
 
-Firt time configuration, to disable dvb_usb_rtl28xxu kernel driver:
+Firt time configuration, open a new terminal as root **(sudo -s or su):**
+
+- Disable dvb_usb_rtl28xxu kernel driver:
 ```
 cd /etc/modprobe.d/
-sudo gedit ban-rtl.conf
+gedit ban-rtl.conf
 ```
 Type this line in the text file you created:
 `blacklist dvb_usb_rtl28xxu`
 
-Reboot
+Save and exit.
 
-#### Windows:
+- Download project file **rtl-sdr.rules** and save as `/etc/udev/rules.d/10-rtl-sdr.rules`
+```
+cd /etc/udev/rules.d/
+wget -O 10-rtl-sdr.rules https://raw.githubusercontent.com/rafaelferrari0/rtl_fm_player/master/rtl-sdr.rules
+```
+- Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases) (Linux versions)
+
+Reboot.
+
+
+### Windows:
 
 - Download Zadig driver https://zadig.akeo.ie/.
 
@@ -42,22 +54,23 @@ Reboot
     4. In the drop down box choose Bulk-In, Interface (Interface 0). This may also sometimes show up as something prefixed with “RTL28328U”. That choice is also valid.
     5. Make sure that WinUSB is selected as the target driver and click on Replace Driver.
 
-- Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases)
-- Optional. Compile it on Linux, or Windows using MinGW.
+- Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases) (Win32 or Win64 versions)
 
 
 Usage
 -----
 
-On Linux, open a console and type `sudo ./rtl_fm_player`
+On **Linux** open a console, extract one of the compiled release file, and type `./rtl_fm_player`
 
-On Windows, just double click `rtl_fm_player.exe`
+On **Windows** just double click `rtl_fm_player.exe`
 
+Type `S` or `W` to change frequency.
 Use keyboard to control frequency, timeshift, mute and recording.
 
 You can also open Command Prompt and type parameters manually:
 ```
 C:\>rtl_fm_player.exe -h
+
 ./rtl_fm_player -h
 ```
 
