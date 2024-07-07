@@ -25,6 +25,8 @@
 
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
+project(rtl_fm_player C)
+
 foreach(p
     CMP0025 # CMake 3.0
     CMP0028

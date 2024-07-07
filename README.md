@@ -14,11 +14,14 @@ Is a console application that runs on Linux and Windows, all commands like chang
 Outputs stereo audio to soundcard using SDL library.
 Record stereo .wav file format.
 
-Runs on ANY Linux version (if compiled from source). :thumbsup:
-Runs on ANY Windows version (from XP to 11). :thumbsup:
+- Runs on ANY Linux version (if compiled from source). :thumbsup:
+- Runs on ANY Windows version (from XP to 11). :thumbsup:
 
 The DVB-T dongle has to be based on the Realtek RTL2832U.
 See http://sdr.osmocom.org/trac/wiki/rtl-sdr for more RTL SDR details.
+
+Or you can buy from Ebay, Aliexpress searching for "RTL SDR BLOG".
+
 You need to install a new driver to use this dongle.
 
 
@@ -52,7 +55,10 @@ apt-get install libusb-1.0 libsdl2-2.0
 
 - Download a compiled **RTL FM Player** here: [ >> Releases << ](https://github.com/rafaelferrari0/rtl_fm_player/releases) (Linux versions)
 
-Reboot.
+> [!TIP]
+> Or you can compile a new one, see below in **Building** section.
+
+**Reboot.**
 
 
 ### Windows:

@@ -1345,15 +1345,14 @@ int main(int argc, char **argv)
   int enable_biastee = 0;
   int circbuffersize;
   int reprintline;
-  int outputFormat;
   int recording;
   int charposition;
   int controldisabled;
   float newfrequency;
   struct tm *timeinfo;
   time_t rawtime;
-  char infostr[22];
-  char fileUniqueStr[35];
+  char infostr[255];
+  char fileUniqueStr[255];
   char *filenameExt;
 
   SDL_AudioSpec audioFormatDesired;
@@ -1372,7 +1371,7 @@ int main(int argc, char **argv)
 #ifdef _WIN32
   SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 #else
-  nice(-5);
+  opt = nice(-5);
 #endif
 
   printf("RTL FM Player Version %s (c) RafaelBF 2024.\n", VERSION);
