@@ -61,6 +61,7 @@
 #include "rtl_fm_player.h"
 
 #include "convenience/convenience.h"
+
 #include "rtl-sdr.h"
 
 #define VERSION "0.0.2"
@@ -140,7 +141,7 @@ double log2(double n)
 
 int _getch(void)
 {
-// https://bitismyth.wordpress.com/2015/06/10/um-getch-multiplataforma/
+/* https://bitismyth.wordpress.com/2015/06/10/um-getch-multiplataforma/ */
 #ifdef __linux
   struct termios newtios, oldtios;
   int ch;
@@ -161,8 +162,7 @@ int _getch(void)
  
   return ch;
 #else
-  // Usa as funções do console do Windows para ler uma tecla.
-  //
+  /* Usa as funções do console do Windows para ler uma tecla. */
   HANDLE hStdin = GetStdHandle (STD_INPUT_HANDLE);
   INPUT_RECORD irInputRecord;
   DWORD dwEventsRead;
@@ -171,12 +171,12 @@ int _getch(void)
   /* Le keypress... */
    while(PeekConsoleInputA(hStdin,&irInputRecord,1,&dwEventsRead)){
         if(dwEventsRead!=0){
-            //check if it was Key Event
+            /* check if it was Key Event */
             if(irInputRecord.EventType==KEY_EVENT){
                 ch=irInputRecord.Event.KeyEvent.uChar.AsciiChar; 
                 ReadConsoleInputA(hStdin,&irInputRecord,1,&dwEventsRead);
                 FlushConsoleInputBuffer(hStdin);
-              if (irInputRecord.Event.KeyEvent.bKeyDown!=0)   // not key release
+              if (irInputRecord.Event.KeyEvent.bKeyDown!=0)   /* not key release */
                 return ch;
               else
                 continue;
@@ -497,7 +497,7 @@ void lp_real_f32(struct demod_state *fm)
       }
     }
     break;
-  case 1: // Mono
+  case 1: /* Mono */
     for (i = 0; i < fm->result_len; i++)
     {
       fm->lpr.br[fm->lpr.pos] = ib[i];
@@ -530,7 +530,7 @@ void lp_real_f32(struct demod_state *fm)
       }
     }
     break;
-  case 2: // Stereo
+  case 2: /* Stereo */
     for (i = 0; i < fm->result_len; i++)
     {
       fm->lpr.br[fm->lpr.pos] = ib[i];
@@ -542,9 +542,9 @@ void lp_real_f32(struct demod_state *fm)
 
         v = fm->lpr.br[j] + fm->lpr.br[l];
 
-        vm += v * fm->lpr.fm[k]; // L+R low pass (0 Hz ... 17 kHz)
-        vp += v * fm->lpr.fp[k]; // Pilot frequency band pass (18 kHz ... 20 kHz) --> filters out the 19 kHz
-        vs += v * fm->lpr.fs[k]; // L-R band pass (21 kHz ... 55 kHz)
+        vm += v * fm->lpr.fm[k]; /* L+R low pass (0 Hz ... 17 kHz) */
+        vp += v * fm->lpr.fp[k]; /* Pilot frequency band pass (18 kHz ... 20 kHz) --> filters out the 19 kHz */
+        vs += v * fm->lpr.fs[k]; /* L-R band pass (21 kHz ... 55 kHz) */
 
         /* next value before storing, easiest way to get complementary index */
         if (l == 0)
@@ -559,9 +559,9 @@ void lp_real_f32(struct demod_state *fm)
 
       fm->lpr.bm[fm->lpr.pos] = vm;
 
-      // AM L-R demodulation
-      // sin2atan2f(...) doubles the pilot frequency 19 kHz --> 38 kHz
-      // vs * sin2atan2_f32(...) AM demodulation
+      /* AM L-R demodulation
+       sin2atan2f(...) doubles the pilot frequency 19 kHz --> 38 kHz
+       vs * sin2atan2_f32(...) AM demodulation */
       fm->lpr.bs[fm->lpr.pos] = vs * sin2atan2_f32(vp * fm->lpr.swf, vp * fm->lpr.cwf - fm->lpr.pp);
       fm->lpr.pp = vp;
 
@@ -583,15 +583,15 @@ void lp_real_f32(struct demod_state *fm)
             l--;
           }
 
-          vm += (fm->lpr.bm[j] + fm->lpr.bm[l]) * fm->lpr.fm[k]; // low pass (0 Hz ... 17 kHz)
-          vs += (fm->lpr.bs[j] + fm->lpr.bs[l]) * fm->lpr.fm[k]; // low pass (0 Hz ... 17 kHz), removes unwanted AM demodulation high frequencies
+          vm += (fm->lpr.bm[j] + fm->lpr.bm[l]) * fm->lpr.fm[k]; /* low pass (0 Hz ... 17 kHz) */
+          vs += (fm->lpr.bs[j] + fm->lpr.bs[l]) * fm->lpr.fm[k]; /* low pass (0 Hz ... 17 kHz), removes unwanted AM demodulation high frequencies */
 
           /* next value after storing */
           if (++j == fm->lpr.size) j = 0;
         }
 
-        /* we can overwrite input, but not for downsample input buffer 16384 */
-        // Calculate stereo signal
+        /* we can overwrite input, but not for downsample input buffer 16384 
+         Calculate stereo signal */
         ib[o] = vm + vs;
         ib[o + 1] = vm - vs;
         o += 2;
@@ -760,19 +760,19 @@ void full_demod(struct demod_state *d)
   int i, ds_p;
   int sr = 0;
 
-  // Low pass to filter only to the tuned FM channel
+  /* Low pass to filter only to the tuned FM channel */
   lp_f32(d);
 
-  // Shadow buffer to calculate the RMS
+  /* Shadow buffer to calculate the RMS */
   memcpy(RMSShadowBuf, d->lowpassed, d->lp_len * sizeof(float));
   RMSShadowBuf_len = d->lp_len;
 
-  // FM demodulation
+  /* FM demodulation */
   fm_demod_f32(d); /* lowpassed -> result */
 
   /* todo, fm noise squelch */
   
-  // use nicer filter here too?
+  /* use nicer filter here too? */
   if (d->post_downsample > 1)
   {
     /* For float not implemented */
@@ -833,7 +833,7 @@ static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
     _input_buffer_size = _input_buffer_size_max;
   }
   pthread_rwlock_unlock(&d->rw);
-  //safe_cond_signal(&d->ready, &d->ready_m);
+  /* safe_cond_signal(&d->ready, &d->ready_m); */
 }
 
 static void * dongle_thread_fn(void *arg)
@@ -959,7 +959,7 @@ static void * output_thread_fn(void *arg)
     }
 
 
-    // copy block to circular buffer
+    /* copy block to circular buffer */
     pthread_rwlock_rdlock(&s->rw);
     memcpy(_circbuffer+(circbufferbotton*CIRCBUFFCLUSTER), _output_buffer + _output_buffer_rpos, CIRCBUFFCLUSTER);
     _output_buffer_rpos += CIRCBUFFCLUSTER;
@@ -981,7 +981,7 @@ static void * output_thread_fn(void *arg)
 
       if (_circbuffeshift < 0) _circbuffeshift=0;
 
-      // max shift time available
+      /* max shift time available */
       if (circbufferfull==0) {
         if (_circbuffeshift > circbufferbotton)
           _circbuffeshift=circbufferbotton;
@@ -990,7 +990,7 @@ static void * output_thread_fn(void *arg)
           _circbuffeshift = (_circbufferslots-2);
       }
 
-      // calculate circular buffer playback position
+      /* calculate circular buffer playback position */
       circbufferout = (circbufferbotton-_circbuffeshift);
       if (circbufferout < 0) {
         circbufferout  = _circbufferslots - (_circbuffeshift-circbufferbotton);
@@ -1013,14 +1013,14 @@ static void * output_thread_fn(void *arg)
       if (SentNum != 0) {
         fprintf(stderr, "Error sending stream: \"%s\". Close the connection!\n", SDL_GetError() );
         _isStartStream = false;
-        // Stop reading samples from dongle
+        /* Stop reading samples from dongle */
         rtlsdr_cancel_async(dongle.dev);
         pthread_join(dongle.thread, NULL);
         fprintf(stderr,"Press [X] to exit");
       }
-    } // _isStartStream
+    } /* _isStartStream */
 
-  } // _do_exit
+  } /* _do_exit */
 
   if (_isStartStream) {
     _isStartStream=false;
@@ -1033,8 +1033,8 @@ static void * output_thread_fn(void *arg)
 
 static void optimal_settings(int freq, int rate)
 {
-  // giant ball of hacks
-  // seems unable to do a single pass, 2:1
+  /* giant ball of hacks
+   seems unable to do a single pass, 2:1 */
   int capture_freq, capture_rate;
   struct dongle_state *d = &dongle;
   struct demod_state *dm = &demod;
@@ -1067,15 +1067,10 @@ static void optimal_settings(int freq, int rate)
 
 static void * controller_thread_fn(void *arg)
 {
-  // thoughts for multiple dongles
-  // might be no good using a controller thread if retune/rate blocks
+  /* thoughts for multiple dongles
+   might be no good using a controller thread if retune/rate blocks */
   int i;
   struct controller_state *s = arg;
-
-  if (s->wb_mode) {
-    for (i=0; i < s->freq_len; i++) {
-      s->freqs[i] += 16000;}
-  }
 
   /* set up primary channel */
   optimal_settings(s->freqs[0], demod.rate_in);
@@ -1122,14 +1117,14 @@ void frequency_range(struct controller_state *s, char *arg)
   int i;
   start = arg;
   stop = strchr(start, ':') + 1;
-  if (stop == (char *)1) { // no stop or step given
+  if (stop == (char *)1) { /* no stop or step given */
     s->freqs[s->freq_len] = (uint32_t) atofs(start);
     s->freq_len++;
     return;
   }
   stop[-1] = '\0';
   step = strchr(stop, ':') + 1;
-  if (step == (char *)1) { // no step given
+  if (step == (char *)1) { /* no step given */
     s->freqs[s->freq_len] = (uint32_t) atofs(start);
     s->freq_len++;
     s->freqs[s->freq_len] = (uint32_t) atofs(stop);
@@ -1152,7 +1147,7 @@ void frequency_range(struct controller_state *s, char *arg)
 void dongle_init(struct dongle_state *s)
 {
   s->rate = DEFAULT_SAMPLE_RATE;
-  s->gain = AUTO_GAIN; // tenths of a dB
+  s->gain = AUTO_GAIN; /* tenths of a dB */
   s->mute = 0;
   s->direct_sampling = 0;
   s->demod_target = &demod;
@@ -1169,7 +1164,7 @@ void demod_init(struct demod_state *s)
   s->downsample_passes = 0;
   s->comp_fir_size = 0;
   s->prev_index = 0;
-  s->post_downsample = 1;  // once this works, default = 4
+  s->post_downsample = 1;  /* once this works, default = 4 */
   s->custom_atan = 1;
   s->deemph = DEEMPHASIS_FM_EU;
   s->offset_tuning = 0;
@@ -1226,7 +1221,7 @@ void controller_init(struct controller_state *s)
   s->freqs[0] = 100000000;
   s->freq_len = 0;
   s->edge = 0;
-  s->wb_mode = 1; // Set to wbfm
+  s->wb_mode = 1; /* Set to wbfm */
   pthread_cond_init(&s->hop, NULL);
   pthread_mutex_init(&s->hop_m, NULL);
 }
@@ -1241,21 +1236,22 @@ void controller_cleanup(struct controller_state *s)
 void sanity_checks(void)
 {
   if (controller.freq_len == 0) {
-    controller.freqs[controller.freq_len++] = 88000000;
+    controller.freqs[controller.freq_len++] = 108000000;
+  } else {
+    if (controller.freqs[controller.freq_len-1] > 108000000)
+      controller.freqs[controller.freq_len-1] = 76000000;
+
+    if (controller.freqs[controller.freq_len-1] < 76000000)
+      controller.freqs[controller.freq_len-1] = 108000000;  
   }
 
   if (controller.freq_len >= FREQUENCIES_LIMIT) {
     fprintf(stderr, "Too many channels, maximum %i.\n", FREQUENCIES_LIMIT);
-    fprintf(stderr,"Press any key to exit\n");
-    _getch();
-    exit(1);
+    controller.freq_len = FREQUENCIES_LIMIT;
   }
 
   if (controller.freq_len > 1 && demod.squelch_level == 0) {
     fprintf(stderr, "Please specify a squelch level.  Required for scanning multiple frequencies.\n");
-    fprintf(stderr,"Press any key to exit\n");
-    _getch();
-    exit(1);
   }
 
 }
@@ -1264,8 +1260,8 @@ void CloseWaveOut(FILE * file)
 {
 
   if (file!=NULL) {
-    // Fixing WAV file header
-    // http://www.topherlee.com/software/pcm-tut-wavformat.html
+    /* Fixing WAV file header
+     http://www.topherlee.com/software/pcm-tut-wavformat.html */
     if (file != stdout) {
       long int outfilesize = ftell(file);
       fseek ( file, 4, SEEK_SET );
@@ -1280,10 +1276,10 @@ void CloseWaveOut(FILE * file)
       fputc((outfilesize >> 8) & 0xff,file);
       fputc((outfilesize >> 16) & 0xff,file);
       fputc((outfilesize >> 24) & 0xff,file);
-    } // if
+    } /* if */
 		fclose(file);
 		file=NULL;
-	} // if
+	} /* if */
 
 }
 
@@ -1292,7 +1288,7 @@ FILE * InitWaveOut(char * newfile, int mode)
   FILE *file;
   size_t written;
 
-  // write WAV output to file
+  /* write WAV output to file */
   if (newfile ==0) {
     return NULL;
   } else {
@@ -1313,13 +1309,13 @@ FILE * InitWaveOut(char * newfile, int mode)
       }
     }
     if (mode==2) {  
-      written = fwrite(_WAVHeaderStereo , sizeof(char), sizeof(_WAVHeaderStereo), file); // write STEREO WAV header
+      written = fwrite(_WAVHeaderStereo , sizeof(char), sizeof(_WAVHeaderStereo), file); /* write STEREO WAV header */
       if (written != sizeof(_WAVHeaderStereo)) {
         fclose(file);
         return NULL;
       }
     } else {
-      written = fwrite(_WAVHeaderMono , sizeof(char), sizeof(_WAVHeaderMono), file); // write MONO WAV header
+      written = fwrite(_WAVHeaderMono , sizeof(char), sizeof(_WAVHeaderMono), file); /* write MONO WAV header */
       if (written != sizeof(_WAVHeaderMono)) {
         fclose(file);
         return NULL;
@@ -1327,7 +1323,7 @@ FILE * InitWaveOut(char * newfile, int mode)
     }
     
     return file;
-  } // newfile
+  } /* newfile */
 
 }
 
@@ -1356,14 +1352,14 @@ int main(int argc, char **argv)
   char *filenameExt;
 
   SDL_AudioSpec audioFormatDesired;
+  SDL_AudioSpec audioFormatObtained;
   audioFormatDesired.freq = 48000;
   audioFormatDesired.format = AUDIO_S16LSB;
   audioFormatDesired.channels = 2;
   audioFormatDesired.samples = 4096;
   audioFormatDesired.callback = 0;
-  SDL_AudioSpec audioFormatObtained;
 
-  // timeshift buffer size in kbytes
+  /* timeshift buffer size in kbytes */
   circbuffersize = 184320;
   _circbufferslots = (circbuffersize * 1024) / CIRCBUFFCLUSTER;
   _circbuffeshift=0;
@@ -1374,7 +1370,7 @@ int main(int argc, char **argv)
   opt = nice(-5);
 #endif
 
-  printf("RTL FM Player Version %s (c) RafaelBF 2024.\n", VERSION);
+  printf("RTL FM Player Version %s (c) RafaelBF 2025.\n", VERSION);
 
   if (SDL_Init(SDL_INIT_AUDIO) < 0) {
     fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -1399,8 +1395,6 @@ int main(int argc, char **argv)
       dev_given = 1;
       break;
     case 'f':
-      if (controller.freq_len >= FREQUENCIES_LIMIT) {
-        break;}
       if (strchr(optarg, ':'))
         {frequency_range(&controller, optarg);}
       else
@@ -1463,7 +1457,7 @@ int main(int argc, char **argv)
       }
       break;
     case 'F':
-      demod.downsample_passes = 1;  // truthy placeholder
+      demod.downsample_passes = 1;  /* truthy placeholder */
       demod.comp_fir_size = atoi(optarg);
       break;
 
@@ -1546,7 +1540,7 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  // allocate timeshift buffer
+  /* allocate timeshift buffer */
   if (_beverbose)
     fprintf(stderr, "Allocating %u bytes\n", _circbufferslots * CIRCBUFFCLUSTER);
   _circbuffer = (char *)malloc(_circbufferslots * CIRCBUFFCLUSTER);
@@ -1603,7 +1597,7 @@ int main(int argc, char **argv)
 
   verbose_ppm_set(dongle.dev, dongle.ppm_error);
 
-  // Init FM float demodulator
+  /* Init FM float demodulator */
   init_u8_f32_table();
   init_lp_f32();
   init_lp_real_f32(&demod);
@@ -1612,24 +1606,18 @@ int main(int argc, char **argv)
   /* Reset endpoint before we start reading from it (mandatory) */
   verbose_reset_buffer(dongle.dev);
 
-  // start threads
+  /* start threads */
   pthread_create(&controller.thread, NULL, controller_thread_fn, (void *) (&controller));
-  usleep(100000);
+  usleep(500000);
 
   pthread_create(&output.thread, NULL, output_thread_fn, (void *) (&output));
 
   pthread_create(&demod.thread, NULL, demod_thread_fn, (void *) (&demod));
 
-  // Start reading samples from dongle 
+  /* Start reading samples from dongle  */
   pthread_create(&dongle.thread, NULL, dongle_thread_fn, (void *) (&dongle));
 
   optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
-  if (_beverbose) {
-    verbose_set_frequency(dongle.dev, dongle.freq);
-  } else {
-    rtlsdr_set_center_freq(dongle.dev, dongle.freq);
-  }
-
 
   if (demod.lpr.mode==2) {
     if (_beverbose)
@@ -1653,7 +1641,7 @@ int main(int argc, char **argv)
   }
 
 
-  // filename given at command line
+  /* filename given at command line */
   controldisabled=0;
   if (output.filename!=0) {
     output.file = InitWaveOut(output.filename,demod.lpr.mode);
@@ -1700,7 +1688,7 @@ int main(int argc, char **argv)
   while (!_do_exit)
   {
 
-    // [TimeShift100%] [Mute] [Rec]
+    /* [TimeShift100%] [Mute] [Rec] */
     if (_circbuffeshift <= 0) {
       strcpy(infostr,"[Live] ");
     } else {
@@ -1717,8 +1705,8 @@ int main(int argc, char **argv)
         strcat(infostr, "[Rec]                ");
       else
         strcat(infostr, "                     ");    
-    }          // [Live]
-               // [TimeShift100%] [Mute] [Rec]
+    }          /* [Live]
+                  [TimeShift100%] [Mute] [Rec] */
 
 
     if (reprintline) {
@@ -1734,10 +1722,9 @@ int main(int argc, char **argv)
 
     if (!controldisabled) {
 
-      if ((keybrd==119) || (keybrd==87)) { // W
+      if ((keybrd==119) || (keybrd==87)) { /* W */
         controller.freqs[controller.freq_len-1] += 50000;
-        if (controller.freqs[controller.freq_len-1] > 108000000)
-          controller.freqs[controller.freq_len-1] = 76000000;
+        sanity_checks();
         optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
         if ( rtlsdr_set_center_freq(dongle.dev, dongle.freq) < 0 ) {
           fprintf(stderr, "WARNING: Failed to set center freq.\r");
@@ -1748,10 +1735,9 @@ int main(int argc, char **argv)
             SDL_ClearQueuedAudio(_audio_device);
         }
       }
-      if ((keybrd==115) || (keybrd==83)) { // S
+      if ((keybrd==115) || (keybrd==83)) { /* S */
         controller.freqs[controller.freq_len-1] -= 50000;
-        if (controller.freqs[controller.freq_len-1] < 76000000)
-          controller.freqs[controller.freq_len-1] = 108000000;
+        sanity_checks();
         optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
         if ( rtlsdr_set_center_freq(dongle.dev, dongle.freq) < 0 ) {
           fprintf(stderr, "WARNING: Failed to set center freq.\r");
@@ -1762,8 +1748,8 @@ int main(int argc, char **argv)
             SDL_ClearQueuedAudio(_audio_device);
         }
       }
-      if ((keybrd==116) || (keybrd==84)) { // T
-        printf("                                                  \r"); // clear this line
+      if ((keybrd==116) || (keybrd==84)) { /* T */
+        printf("                                                  \r"); /* clear this line */
         printf("Type the new frequency: ");
         newfrequency=0;      
 
@@ -1783,8 +1769,8 @@ int main(int argc, char **argv)
         newfrequency = atof(infostr);
         newfrequency*=1000000;
 
-        if ( (newfrequency <= 108000000) && (newfrequency >= 76000000) ) {
           controller.freqs[controller.freq_len-1] = (uint32_t)newfrequency;
+          sanity_checks();
           optimal_settings(controller.freqs[controller.freq_len-1], demod.rate_in);
 
           if ( rtlsdr_set_center_freq(dongle.dev, dongle.freq) < 0 ) {
@@ -1796,28 +1782,25 @@ int main(int argc, char **argv)
               SDL_ClearQueuedAudio(_audio_device);
           }
         
-          } else {
-            reprintline=1;
-        }
-      } // if keybrd
+      } /* if keybrd */
 
-      if ((keybrd==97) || (keybrd==65)) { // A
+      if ((keybrd==97) || (keybrd==65)) { /* A */
         _circbuffeshift+=20;
         reprintline=1;
         if (SDL_GetQueuedAudioSize(_audio_device) > CIRCBUFFCLUSTER * 5)
           SDL_ClearQueuedAudio(_audio_device);
       }
-      if ((keybrd==100) || (keybrd==68)) { // D
+      if ((keybrd==100) || (keybrd==68)) { /* D */
         _circbuffeshift-=20;
         reprintline=1;
         if (SDL_GetQueuedAudioSize(_audio_device) > CIRCBUFFCLUSTER * 5)
           SDL_ClearQueuedAudio(_audio_device);
       }
-      if ((keybrd==108) || (keybrd==76)) { // P
+      if ((keybrd==108) || (keybrd==76)) { /* P */
         _circbuffeshift=0;
         reprintline=1;
       }
-      if ((keybrd==109) || (keybrd==77)) { // M
+      if ((keybrd==109) || (keybrd==77)) { /* M */
         if (!_audio_muted) {
           SDL_PauseAudioDevice(_audio_device, 1);
           _audio_muted=1;
@@ -1830,7 +1813,7 @@ int main(int argc, char **argv)
         reprintline=1;
       }
 
-      if ((keybrd==114) || (keybrd==82)) { // R
+      if ((keybrd==114) || (keybrd==82)) { /* R */
         if (!recording) {
           time ( &rawtime );
           timeinfo = localtime ( &rawtime );
@@ -1845,7 +1828,7 @@ int main(int argc, char **argv)
             reprintline=1;
             output.filename=fileUniqueStr;
           }
-        } else { // recording
+        } else { /* recording */
           output.filename=0;
           CloseWaveOut(output.file);
           recording=0;
@@ -1853,14 +1836,14 @@ int main(int argc, char **argv)
         }
       }
       
-    } // controldisabled
+    } /* controldisabled */
 
-    if ((keybrd==120) || (keybrd==88)) { // X
+    if ((keybrd==120) || (keybrd==88)) { /* X */
       _do_exit = 1;
       fflush(stdin); 
     }
 
-  } // while !_do_exit
+  } /* while !_do_exit */
   /////////////////////////////////////////////////////
 
 
@@ -1881,8 +1864,8 @@ int main(int argc, char **argv)
   if (_beverbose)
     fprintf(stderr, "Closing threads\n");
 
-  // wait for dongle thread
-  // rtlsdr_cancel_async must be called inside rtlsdr_callback thread
+  /* wait for dongle thread
+     rtlsdr_cancel_async must be called inside rtlsdr_callback thread */
   pthread_join(dongle.thread, NULL); 
   safe_cond_signal(&demod.ready, &demod.ready_m);
   pthread_join(demod.thread, NULL);
